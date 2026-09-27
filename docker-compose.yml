@@ -36,7 +36,7 @@ services:
       - "8000:8000"
     volumes:
       # Persist embedding data outside the container.
-      - ./data/embeddings/chroma:/chroma/chroma
+      - ./data/embeddings/chroma:/data
     restart: unless-stopped
 
   # ---------------------------------------------------------------------------
