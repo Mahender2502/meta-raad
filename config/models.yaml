@@ -1,0 +1,31 @@
+# LLM Configurations
+
+models:
+  gpt4o:
+    provider: openai
+    model: gpt-4o
+    temperature: 0
+    seed: 42
+
+  gpt4o_mini:
+    provider: openai
+    model: gpt-4o-mini
+    temperature: 0
+    seed: 42
+
+  deepseek_v3:
+    provider: deepseek
+    model: deepseek-chat
+    temperature: 0
+    seed: 42
+    base_url: https://api.deepseek.com
+
+  llama_3_1:
+    provider: local
+    model: meta-llama/Meta-Llama-3.1-8B-Instruct
+    temperature: 0
+    device_map: auto
+    torch_dtype: float16
+
+embedding:
+  model: all-MiniLM-L6-v2

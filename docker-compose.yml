@@ -1,0 +1,82 @@
+# =============================================================================
+# RAD-LLM: Docker Compose Configuration
+#
+# Services:
+#   chromadb   — Standalone ChromaDB vector database (single instance, with a
+#                named/bind volume for persistent storage).
+#   backend    — FastAPI application container. Hosts the RAG endpoint
+#                (POST /rag/query, POST /rag/index) backed by ChromaDB and
+#                BAAI/bge-base-en-v1.5 embeddings (sentence-transformers),
+#                plus a provider-agnostic LLM client (app/services/
+#                llm_client.py) — the model/provider is not decided yet and
+#                defaults to a stub client via LLM_PROVIDER=stub. Self-
+#                consistency scoring and explanation-quality evaluation are
+#                added in a later step.
+#
+# Usage:
+#   docker compose up -d --build      # Build and start ChromaDB + backend
+#   docker compose logs -f backend    # Follow backend logs
+#
+# =============================================================================
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # ChromaDB — Vector database for embedding storage and similarity search
+  #
+  # Single instance. Data is persisted to ./data/embeddings/chroma via a bind
+  # mount so it survives container restarts/rebuilds. Reachable from the
+  # backend service at http://chromadb:8000.
+  # ---------------------------------------------------------------------------
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: rad-llm-chromadb
+    ports:
+      # ChromaDB HTTP API (exposed on host too, for local debugging/tools)
+      - "8000:8000"
+    volumes:
+      # Persist embedding data outside the container.
+      - ./data/embeddings/chroma:/chroma/chroma
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # Backend — FastAPI service
+  #
+  # All backend code, its Dockerfile, and its own requirements.txt live in
+  # ./backend (self-contained, separate from the root research/notebook
+  # environment). The RAG endpoint is implemented; self-consistency
+  # detection and explanation-evaluation endpoints are added in a later
+  # step.
+  # ---------------------------------------------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: rad-llm-backend
+    volumes:
+      # Mount the backend directory so code changes are reflected immediately
+      # without rebuilding the image.
+      - ./backend:/app
+    env_file:
+      # Load API keys (OPENAI_API_KEY, etc.) and CHROMA_HOST/CHROMA_PORT
+      # from a .env file. Create one from .env.example before first run.
+      - .env
+    environment:
+      # Lets application code resolve the ChromaDB service by name inside
+      # the compose network instead of hardcoding "localhost".
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+      # LLM provider is undecided — defaults to a stub client so the RAG
+      # endpoint runs end-to-end without any API key. Override via .env
+      # (LLM_PROVIDER=openai|deepseek, plus the matching *_API_KEY) once a
+      # model is chosen; no code changes needed in app/services/rag_service.py.
+      - LLM_PROVIDER=${LLM_PROVIDER:-stub}
+    ports:
+      # FastAPI (uvicorn)
+      - "8080:8080"
+    depends_on:
+      - chromadb
+    # Defined in backend/Dockerfile; repeated here so docker-compose.yml is
+    # self-documenting when read on its own.
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--reload"]
+    restart: unless-stopped

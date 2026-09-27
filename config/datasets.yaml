@@ -1,0 +1,74 @@
+# NLP Anomaly Detection Datasets (AD-LLM Benchmark)
+
+datasets:
+  AG_News:
+    normal_categories:
+      - Sports
+      - Business
+      - Sci/Tech
+    anomaly_category: World
+    train_size: 66098
+    test_size: 32109
+    anomaly_ratio: 0.1177
+    data_dir: data/raw/AG_News
+
+  BBC_News:
+    normal_categories:
+      - Business
+      - Politics
+      - Sport
+      - Tech
+    anomaly_category: Entertainment
+    train_size: 1206
+    test_size: 579
+    anomaly_ratio: 0.1071
+    data_dir: data/raw/BBC_News
+
+  IMDB_Reviews:
+    normal_categories:
+      - Positive
+    anomaly_category: Negative
+    train_size: 17417
+    test_size: 8952
+    anomaly_ratio: 0.1661
+    data_dir: data/raw/IMDB_Reviews
+
+  N24_News:
+    normal_categories:
+      - Television
+      - Your Money
+      - Automobiles
+      - Science
+      - Economy
+      - Dance
+      - Travel
+      - Technology
+      - Sports
+      - Movies
+      - Music
+      - Real Estate
+      - Books
+      - Education
+      - Art & Design
+      - Theater
+      - Media
+      - Style
+      - Global Business
+      - Well
+      - Health
+      - Fashion & Style
+      - Opinion
+    anomaly_category: Food
+    train_size: 40569
+    test_size: 19227
+    anomaly_ratio: 0.0951
+    data_dir: data/raw/N24_News
+
+  SMS_Spam:
+    normal_categories:
+      - Ham
+    anomaly_category: Spam
+    train_size: 3162
+    test_size: 1510
+    anomaly_ratio: 0.1020
+    data_dir: data/raw/SMS_Spam

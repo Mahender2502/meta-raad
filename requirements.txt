@@ -1,0 +1,62 @@
+# =============================================================================
+# RAD-LLM: LLM-Based Anomaly Detection Research Project
+# Python Dependencies
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Core Scientific Computing
+# -----------------------------------------------------------------------------
+numpy>=1.24.0
+scipy>=1.10.0
+pandas>=2.0.0
+
+# -----------------------------------------------------------------------------
+# Machine Learning
+# -----------------------------------------------------------------------------
+scikit-learn>=1.3.0
+# PyOD: Python Outlier Detection library — provides classical anomaly detection
+# baselines (Isolation Forest, LOF, OCSVM, etc.) for comparison with LLM methods
+pyod>=1.1.0
+
+# -----------------------------------------------------------------------------
+# Deep Learning — PyTorch ecosystem
+# For CPU-only installs, use:
+#   pip install torch --index-url https://download.pytorch.org/whl/cpu
+# For GPU (CUDA 12.1):
+#   pip install torch --index-url https://download.pytorch.org/whl/cu121
+# -----------------------------------------------------------------------------
+torch>=2.0.0
+transformers>=4.35.0
+accelerate>=0.24.0
+
+# -----------------------------------------------------------------------------
+# Embedding & Vector Store
+# sentence-transformers: generates dense embeddings for anomaly scoring
+# chromadb: lightweight vector database for embedding storage and retrieval
+# -----------------------------------------------------------------------------
+sentence-transformers>=2.2.0
+chromadb>=0.4.22
+
+# -----------------------------------------------------------------------------
+# LLM API Client
+# -----------------------------------------------------------------------------
+openai>=1.12.0
+
+# -----------------------------------------------------------------------------
+# Visualization
+# -----------------------------------------------------------------------------
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# -----------------------------------------------------------------------------
+# Utilities
+# -----------------------------------------------------------------------------
+tqdm>=4.65.0            # Progress bars for long-running experiments
+jsonlines>=3.1.0        # Read/write JSON Lines format for dataset I/O
+python-dotenv>=1.0.0    # Load API keys and config from .env files
+tenacity>=8.2.0         # Retry logic for flaky API calls
+
+# -----------------------------------------------------------------------------
+# Interactive Development
+# -----------------------------------------------------------------------------
+jupyter>=1.0.0
