@@ -17,8 +17,8 @@ class Settings(BaseSettings):
     app_name: str = "RAD-LLM Backend"
     app_version: str = "0.1.0"
 
-    # --- ChromaDB connection (service name from docker-compose network) ---
-    chroma_host: str = "chromadb"
+    # --- ChromaDB connection (overridden to 'chromadb' inside docker-compose) ---
+    chroma_host: str = "localhost"
     chroma_port: int = 8000
     chroma_collection_prefix: str = "rad_llm"
 
