@@ -1,5 +1,5 @@
 # =============================================================================
-# RAD-LLM: Docker Compose Configuration
+# Meta-RAAD: Docker Compose Configuration
 #
 # Services:
 #   chromadb   — Standalone ChromaDB vector database (single instance, with a
@@ -9,9 +9,8 @@
 #                BAAI/bge-base-en-v1.5 embeddings (sentence-transformers),
 #                plus a provider-agnostic LLM client (app/services/
 #                llm_client.py) — the model/provider is not decided yet and
-#                defaults to a stub client via LLM_PROVIDER=stub. Self-
-#                consistency scoring and explanation-quality evaluation are
-#                added in a later step.
+#                defaults to a stub client via LLM_PROVIDER=stub. FG-MOS and
+#                G_score are added in a later step.
 #
 # Usage:
 #   docker compose up -d --build      # Build and start ChromaDB + backend
@@ -29,7 +28,7 @@ services:
   # backend service at http://chromadb:8000.
   # ---------------------------------------------------------------------------
   chromadb:
-    image: chromadb/chroma:latest
+    image: chromadb/chroma:1.4.4   # pinned; the N24 index was verified against this version
     container_name: rad-llm-chromadb
     ports:
       # ChromaDB HTTP API (exposed on host too, for local debugging/tools)
@@ -44,9 +43,8 @@ services:
   #
   # All backend code, its Dockerfile, and its own requirements.txt live in
   # ./backend (self-contained, separate from the root research/notebook
-  # environment). The RAG endpoint is implemented; self-consistency
-  # detection and explanation-evaluation endpoints are added in a later
-  # step.
+  # environment). The RAG endpoint is implemented; RA-ZAD detection,
+  # FG-MOS and G_score endpoints are added in a later step.
   # ---------------------------------------------------------------------------
   backend:
     build:

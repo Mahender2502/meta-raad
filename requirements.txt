@@ -1,5 +1,5 @@
 # =============================================================================
-# RAD-LLM: LLM-Based Anomaly Detection Research Project
+# Meta-RAAD: LLM-Based Anomaly Detection Research Project
 # Python Dependencies
 # =============================================================================
 
@@ -35,7 +35,7 @@ accelerate>=0.24.0
 # chromadb: lightweight vector database for embedding storage and retrieval
 # -----------------------------------------------------------------------------
 sentence-transformers>=2.2.0
-chromadb>=0.4.22
+chromadb==1.4.4          # keep in sync with the chromadb server image in docker-compose.yml
 
 # -----------------------------------------------------------------------------
 # LLM API Client
