@@ -1,10 +1,10 @@
 """
-Provider-agnostic LLM client for the RAD-LLM backend.
+Provider-agnostic LLM client for the Meta-RAAD backend.
 
 We haven't decided which model(s) we'll ultimately use (GPT-4o, DeepSeek-V3,
 Llama 3.1, etc.), so nothing outside this file should ever import a
 provider SDK directly. Every other module (rag_service.py, and later
-self-consistency / explanation-judge logic) talks only to the LLMClient
+RA-ZAD detection / FG-MOS logic) talks only to the LLMClient
 interface below and calls get_llm_client() to obtain an instance. Adding a
 new provider means adding one class here and one branch in the factory —
 it never touches RAG or detection logic.

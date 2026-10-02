@@ -1,5 +1,5 @@
 """
-ChromaDB-backed retriever for RAG-AD.
+ChromaDB-backed retriever for RA-ZAD.
 
 Talks to the standalone ChromaDB container (see docker-compose.yml, service
 `chromadb`) over HTTP. Embeddings are computed locally via TextEmbedder

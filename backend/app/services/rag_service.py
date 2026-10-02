@@ -46,7 +46,7 @@ def build_rag_prompt(query: str, contexts: list[RetrievedContext]) -> str:
     """
     Assemble a prompt from the query plus retrieved exemplars.
 
-    Kept as a small, swappable function — the RAD-LLM-specific detection
+    Kept as a small, swappable function — the Meta-RAAD-specific detection
     prompt (normal/anomaly category framing, JSON schema, chain-of-thought
     instructions) will replace or extend this once the detection module is
     built; the retrieval step above it does not change.

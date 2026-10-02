@@ -2,8 +2,8 @@
 Health-check endpoints.
 
 Used by docker-compose / manual checks to confirm the backend service is up
-and can reach its ChromaDB dependency. Business logic (RAG-AD retrieval,
-self-consistency detection, explanation evaluation) will live in sibling
+and can reach its ChromaDB dependency. Business logic (RA-ZAD detection,
+FG-MOS, G_score) will live in sibling
 router modules under app/api/, added in a later step.
 """
 
@@ -24,7 +24,7 @@ def health_check() -> dict:
 def chromadb_health_check() -> dict:
     """
     Reports whether the backend can reach ChromaDB, without importing the
-    full retrieval stack (kept dependency-light until RAG-AD is implemented).
+    full retrieval stack (kept dependency-light until RA-ZAD is implemented).
     """
     import httpx
 

@@ -1,28 +1,20 @@
-# Experiment Configurations
+# Experiment configuration for Meta-RAAD (see spec.md)
 
+# RA-ZAD: retrieval-augmented zero-shot anomaly detection
 retrieval:
-  k_values: [0, 1, 2, 3, 5]
-  embedding_model: all-MiniLM-L6-v2
+  k_values: [0, 1, 2, 3, 5]   # k=0 is the plain AD-LLM zero-shot baseline
+  metric: cosine
   chromadb_host: chromadb
   chromadb_port: 8000
 
-self_consistency:
-  m_values: [1, 3, 5, 7]
-  temperatures: [0.3, 0.5, 0.7]
-  aggregation_methods:
-    - mean
-    - median
-    - weighted
+# FG-MOS: feature-grounded model selection
+meta_features:
+  - intra_class_compactness   # C_intra
+  - inter_class_separability  # S_inter
 
-explanation_eval:
-  judge_model: gpt-4o-mini
-  dimensions:
-    - faithfulness
-    - specificity
-    - informativeness
-  scale:
-    min: 1
-    max: 5
+# G_score: grounding rate of the rationale (scripted meta-feature citation check)
+grounding:
+  metric: g_score
 
 evaluation:
   metrics:

@@ -1,9 +1,8 @@
 """
-RAD-LLM Backend — FastAPI application entrypoint.
+Meta-RAAD Backend — FastAPI application entrypoint.
 
-Current scope: application scaffolding + health checks only. The RAG-AD
-retrieval, self-consistency scoring, and explanation-quality-judge endpoints
-described in RAD-LLM_Framework_Specification.md will be added as additional
+Current scope: health checks + the RAG retrieval endpoint. RA-ZAD detection,
+FG-MOS and G_score endpoints (see spec.md) will be added as additional
 routers under app/api/ in a later step.
 """
 
@@ -15,10 +14,9 @@ from app.core.config import settings
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
-    description="Backend service for the RAD-LLM anomaly detection pipeline "
-    "(RAG-AD retrieval, self-consistency scoring, explanation-quality "
-    "evaluation). Self-consistency scoring and explanation-quality "
-    "evaluation are implemented in a later step.",
+    description="Backend service for the Meta-RAAD anomaly detection framework "
+    "(RA-ZAD retrieval-augmented detection, FG-MOS model selection, "
+    "G_score grounding metric).",
 )
 
 app.include_router(health.router)

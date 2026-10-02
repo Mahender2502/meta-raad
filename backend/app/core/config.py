@@ -1,9 +1,9 @@
 """
-Application settings for the RAD-LLM backend.
+Application settings for the Meta-RAAD backend.
 
 Values are loaded from environment variables (populated via the .env file
 referenced in docker-compose.yml). This gives the RAG endpoint, the LLM
-client factory, and later self-consistency / explanation-judge logic a
+client factory, and later RA-ZAD detection, FG-MOS and G_score logic a
 single place to read configuration from.
 """
 
@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
     # --- Service metadata ---
-    app_name: str = "RAD-LLM Backend"
+    app_name: str = "Meta-RAAD Backend"
     app_version: str = "0.1.0"
 
     # --- ChromaDB connection (overridden to 'chromadb' inside docker-compose) ---
@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     chroma_port: int = 8000
     chroma_collection_prefix: str = "rad_llm"
 
-    # --- Embedding model for retrieval (RAG-AD) ---
+    # --- Embedding model for retrieval (RA-ZAD) ---
     # BAAI/bge-base-en-v1.5 via sentence-transformers. BGE models are trained
     # with an instruction prefix on the *query* side only (not on documents) —
     # see EMBEDDING_QUERY_INSTRUCTION below, used by app/services/embedder.py.

@@ -1,31 +1,14 @@
-# LLM Configurations
+# LLM / embedding configuration for Meta-RAAD.
+# The deck specifies local open-source LLMs (Ollama / HuggingFace).
+# Concrete model choice is still open -- see "Open decisions" in spec.md.
 
-models:
-  gpt4o:
-    provider: openai
-    model: gpt-4o
-    temperature: 0
-    seed: 42
-
-  gpt4o_mini:
-    provider: openai
-    model: gpt-4o-mini
-    temperature: 0
-    seed: 42
-
-  deepseek_v3:
-    provider: deepseek
-    model: deepseek-chat
-    temperature: 0
-    seed: 42
-    base_url: https://api.deepseek.com
-
-  llama_3_1:
-    provider: local
-    model: meta-llama/Meta-Llama-3.1-8B-Instruct
-    temperature: 0
-    device_map: auto
-    torch_dtype: float16
+llm:
+  provider: stub      # stub | ollama | huggingface (see backend/app/services/llm_client.py)
+  model: null
+  temperature: 0
+  seed: 42
 
 embedding:
-  model: all-MiniLM-L6-v2
+  # Currently implemented in backend/app/core/config.py.
+  # The deck lists text-embedding-3-large -- unresolved, see spec.md.
+  model: BAAI/bge-base-en-v1.5

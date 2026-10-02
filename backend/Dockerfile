@@ -1,5 +1,5 @@
 # =============================================================================
-# RAD-LLM Backend: FastAPI Service
+# Meta-RAAD Backend: FastAPI Service
 #
 # This is the backend service's own image — separate from the root
 # Dockerfile (which builds the heavier research/experiment environment with
