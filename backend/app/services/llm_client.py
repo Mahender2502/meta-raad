@@ -1,10 +1,10 @@
 """
-Provider-agnostic LLM client for the RAD-LLM backend.
+Provider-agnostic LLM client for the Meta-RAAD backend.
 
 We haven't decided which model(s) we'll ultimately use (GPT-4o, DeepSeek-V3,
 Llama 3.1, etc.), so nothing outside this file should ever import a
-provider SDK directly. Every other module (rag_service.py, and later
-self-consistency / explanation-judge logic) talks only to the LLMClient
+provider SDK directly. Every other module (detector.py, and later
+FG-MOS logic) talks only to the LLMClient
 interface below and calls get_llm_client() to obtain an instance. Adding a
 new provider means adding one class here and one branch in the factory —
 it never touches RAG or detection logic.
@@ -15,6 +15,11 @@ Currently wired up:
     - "openai" : minimal implementation using the OpenAI SDK (works for any
                  OpenAI-compatible chat-completions endpoint, including
                  DeepSeek's API, by overriding base_url).
+    - "gemini" : Google AI Studio free tier via its OpenAI-compatible
+                 endpoint (also serves open Gemma models on the same key).
+    - "groq" / "cerebras" : free-tier hosted open models (e.g. Llama 3.1 8B),
+                 same OpenAI-compatible client with a different base_url.
+                 Set LLM_MODEL_NAME to the model id offered on your account.
 
 To add a real provider client, implement generate() and register it in
 get_llm_client() — no other file needs to change.
@@ -153,7 +158,36 @@ def get_llm_client() -> LLMClient:
             base_url="https://api.deepseek.com",
         )
 
+    if provider == "gemini":
+        if not settings.gemini_api_key:
+            raise RuntimeError("LLM_PROVIDER=gemini but GEMINI_API_KEY is not set")
+        return OpenAICompatibleClient(
+            # No safe default: model ids change often. Pick one from AI Studio's
+            # model list and set LLM_MODEL_NAME.
+            model_name=settings.llm_model_name or "gemini-flash-latest",
+            api_key=settings.gemini_api_key,
+            base_url="https://generativelanguage.googleapis.com/v1beta/openai/",
+        )
+
+    if provider == "groq":
+        if not settings.groq_api_key:
+            raise RuntimeError("LLM_PROVIDER=groq but GROQ_API_KEY is not set")
+        return OpenAICompatibleClient(
+            model_name=settings.llm_model_name or "llama-3.1-8b-instant",
+            api_key=settings.groq_api_key,
+            base_url="https://api.groq.com/openai/v1",
+        )
+
+    if provider == "cerebras":
+        if not settings.cerebras_api_key:
+            raise RuntimeError("LLM_PROVIDER=cerebras but CEREBRAS_API_KEY is not set")
+        return OpenAICompatibleClient(
+            model_name=settings.llm_model_name or "llama3.1-8b",
+            api_key=settings.cerebras_api_key,
+            base_url="https://api.cerebras.ai/v1",
+        )
+
     raise ValueError(
-        f"Unknown LLM_PROVIDER '{provider}'. Expected one of: stub, openai, deepseek "
+        f"Unknown LLM_PROVIDER '{provider}'. Expected one of: stub, openai, deepseek, gemini, groq, cerebras "
         "(add new providers in app/services/llm_client.py)."
     )

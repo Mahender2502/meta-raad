@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meta-RAAD Dashboard</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --ink:#1b1f24; --muted:#5d6672; --line:#dfe3e8;
+          --accent:#2457d6; --accent2:#e07a1f; --bad:#c62828; --good:#1b7f3b; --sample:#9a5b00; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#14171b; --card:#1d2127; --ink:#e8ebef; --muted:#9aa4b2; --line:#2e353d;
+            --accent:#7aa2ff; --accent2:#f0a35a; --bad:#ff7b72; --good:#56d364; --sample:#e3b341; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+  main { max-width:1180px; margin:0 auto; padding:24px 16px 56px; }
+  header { display:flex; justify-content:space-between; align-items:baseline; flex-wrap:wrap; gap:8px; }
+  h1 { font-size:22px; margin:0; }
+  nav a { color:var(--accent); text-decoration:none; font-weight:600; }
+  .sub { color:var(--muted); margin:4px 0 16px; }
+  .banner { border:1px solid var(--line); border-left:4px solid var(--sample); background:var(--card);
+            border-radius:8px; padding:10px 14px; font-size:14px; margin-bottom:8px; }
+  h2.sec { font-size:16px; margin:28px 0 4px; }
+  .grid { display:grid; grid-template-columns:repeat(12, 1fr); gap:16px; margin-top:12px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 16px; min-width:0; }
+  .c3 { grid-column:span 3; } .c4 { grid-column:span 4; } .c5 { grid-column:span 5; }
+  .c6 { grid-column:span 6; } .c7 { grid-column:span 7; } .c8 { grid-column:span 8; } .c12 { grid-column:span 12; }
+  @media (max-width:900px) { .c3,.c4,.c5,.c6,.c7,.c8 { grid-column:span 12; } }
+  .card h3 { font-size:14px; margin:0 0 2px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .desc { color:var(--muted); font-size:12.5px; margin:0 0 8px; }
+  .badge { font-size:10.5px; font-weight:700; padding:1px 7px; border-radius:99px; letter-spacing:.3px; border:1px solid currentColor; }
+  .real { color:var(--good); } .pend { color:var(--muted); } .live { color:var(--accent); }
+  .pendbox { display:flex; align-items:center; justify-content:center; min-height:180px; color:var(--muted); font-size:13px; border:1px dashed var(--line); border-radius:8px; }
+
+  .stat { font-size:30px; font-weight:700; line-height:1.15; }
+  .statlabel { color:var(--muted); font-size:12.5px; }
+  canvas { max-height:300px; }
+  .tall canvas { max-height:520px; }
+  table { border-collapse:collapse; width:100%; font-size:13.5px; }
+  th, td { padding:5px 8px; border-bottom:1px solid var(--line); text-align:right; }
+  th:first-child, td:first-child { text-align:left; }
+  td.best { font-weight:700; color:var(--accent); }
+  select, .tog button { padding:4px 10px; border-radius:6px; border:1px solid var(--line); background:var(--bg); color:var(--ink); font:inherit; font-size:13px; }
+  .tog button.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .row { display:flex; gap:8px; align-items:center; margin:4px 0 8px; flex-wrap:wrap; }
+  .cards2 { display:flex; gap:20px; flex-wrap:wrap; }
+  .linkbtn { background:transparent; color:var(--accent); border:1px solid var(--line); border-radius:6px; font:inherit; font-size:12.5px; padding:3px 10px; cursor:pointer; }
+  td.txt, th.txt { text-align:left; } td.txt { max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #l-recent { overflow-x:auto; } #l-recent table { font-size:12.5px; } #l-recent th, #l-recent td { padding:5px 6px; }
+  .upd { color:var(--muted); font-size:12.5px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Meta-RAAD dashboard: N24 News</h1>
+    <nav><a href="/">← Live demo</a></nav>
+  </header>
+  <p class="sub">What the data looks like, and how the experiment results will be shown.</p>
+  <div class="banner">
+    <span class="badge real">REAL DATA</span> panels are computed from the NLP-ADBench N24 News files and BERT vectors.
+    <span class="badge live">LIVE</span> panels update by themselves from the queries run in the demo.
+    <span class="badge pend">PENDING</span> panels fill in once the evaluation runs have produced results.
+  </div>
+
+  <h2 class="sec">1. The data (real)</h2>
+  <div class="grid">
+    <div class="card c3"><div class="stat" id="s-train">–</div><div class="statlabel">train articles (all normal, 23 categories)</div></div>
+    <div class="card c3"><div class="stat" id="s-test">–</div><div class="statlabel">test articles</div></div>
+    <div class="card c3"><div class="stat" id="s-anom">–</div><div class="statlabel">anomalies in the test set (Food, unseen in train)</div></div>
+    <div class="card c3"><div class="stat" id="s-dist">–</div><div class="statlabel" id="s-dist-l">distance-only baseline AUROC</div></div>
+
+    <div class="card c4"><h3>Test set composition <span class="badge real">REAL</span></h3>
+      <p class="desc">Normal categories vs the anomaly class.</p><canvas id="ch-donut"></canvas></div>
+    <div class="card c8 tall"><h3>Articles per category, train vs test <span class="badge real">REAL</span></h3>
+      <p class="desc">The 23 normal categories appear in both splits; Food appears only in test.</p><canvas id="ch-cats"></canvas></div>
+
+    <div class="card c7"><h3>Distance to the nearest train article <span class="badge real">REAL</span></h3>
+      <p class="desc">% of test articles per distance bin (BERT cosine distance). Food is only slightly farther from normal data, so distance alone is a weak anomaly signal.</p><canvas id="ch-dist"></canvas></div>
+    <div class="card c5"><h3>What Food articles look like to the train data <span class="badge real">REAL</span></h3>
+      <p class="desc">Category of the nearest train article, for the 1,828 Food test articles. Food overlaps with Travel, Style and others.</p><canvas id="ch-food"></canvas></div>
+  </div>
+
+  <h2 class="sec">2. Results</h2>
+  <p class="desc" id="res-note">Detection quality of the baseline (k = 0) and of retrieval. These panels fill in from the evaluation runs.</p>
+  <div class="row">
+    <span class="statlabel">Setting:</span>
+    <span class="tog" id="tog-setting"><button data-v="normal_only" class="on">Normal only</button><button data-v="normal_anomaly">Normal + anomaly</button></span>
+  </div>
+  <div class="grid">
+    <div class="card c6"><h3>Detection quality by k and score type <span class="badge pend" data-res="1">PENDING</span></h3>
+      <p class="desc">k = 0 is the AD-LLM baseline (no retrieval). Best AUROC per column in blue.</p><div id="tbl"></div></div>
+    <div class="card c6"><h3>AUROC vs number of retrieved articles k <span class="badge pend" data-res="1">PENDING</span></h3>
+      <p class="desc">When does retrieval help, and when does more stop helping?</p><canvas id="ch-k"></canvas></div>
+
+    <div class="card c6"><h3>Score separation <span class="badge pend" data-res="1">PENDING</span></h3>
+      <div class="row"><span class="tog" id="tog-k"><button data-v="k0" class="on">k = 0 (baseline)</button><button data-v="k3">k = 3 (retrieval)</button></span></div>
+      <p class="desc">% of articles per LLM score bin. Better detection means the two groups move apart.</p><canvas id="ch-sep"></canvas></div>
+    <div class="card c6 tall"><h3>False-alarm rate by category <span class="badge pend" data-res="1">PENDING</span></h3>
+      <p class="desc">Share of normal articles wrongly flagged. Shows where retrieval helps and where it hurts (overlapping categories).</p><canvas id="ch-fa"></canvas></div>
+
+    <div class="card c6"><h3>Explanation grounding (G_score) <span class="badge pend" data-res="1">PENDING</span></h3>
+      <p class="desc">Share of an explanation's claims backed by real evidence.</p><canvas id="ch-g"></canvas></div>
+    <div class="card c6"><h3>Cost of retrieval <span class="badge pend" data-res="1">PENDING</span></h3>
+      <p class="desc">Extra prompt tokens and time per query.</p><div class="cards2" id="cost"></div></div>
+  </div>
+
+  <h2 class="sec">3. Live: queries run in the demo</h2>
+  <div class="row">
+    <span class="badge live" id="live-badge">LIVE</span>
+    <span class="upd" id="live-upd">loading…</span>
+    <button class="linkbtn" id="live-reset" title="Clear the live statistics">Clear</button>
+  </div>
+  <p class="desc" id="live-note"></p>
+  <div class="grid">
+    <div class="card c3"><div class="stat" id="l-queries">–</div><div class="statlabel">queries</div></div>
+    <div class="card c3"><div class="stat" id="l-anom">–</div><div class="statlabel" id="l-anom-l">flagged as anomaly (baseline / retrieval)</div></div>
+    <div class="card c3"><div class="stat" id="l-lat">–</div><div class="statlabel">average seconds per run (baseline / retrieval)</div></div>
+    <div class="card c3"><div class="stat" id="l-cite">–</div><div class="statlabel">retrieval answers that cite a source</div></div>
+
+    <div class="card c6"><h3>Verdicts <span class="badge live" data-live="1">LIVE</span></h3>
+      <p class="desc">Anomaly vs normal verdicts of the baseline and the retrieval run.</p><canvas id="ch-lverd"></canvas></div>
+    <div class="card c6"><h3>Does retrieval change the verdict? <span class="badge live" data-live="1">LIVE</span></h3>
+      <p class="desc" id="l-agree-d">Texts where both runs were compared.</p><canvas id="ch-lagree"></canvas></div>
+
+    <div class="card c6"><h3>LLM scores <span class="badge live" data-live="1">LIVE</span></h3>
+      <p class="desc">Number of runs per anomaly-score bin.</p><canvas id="ch-lscore"></canvas></div>
+    <div class="card c6"><h3>Distance to the nearest train article <span class="badge live" data-live="1">LIVE</span></h3>
+      <p class="desc">Of each query. For reference, normal N24 test articles average about 0.09 and Food about 0.105 (section 1).</p><canvas id="ch-ldist"></canvas></div>
+
+    <div class="card c5 tall"><h3>Categories retrieved most <span class="badge live" data-live="1">LIVE</span></h3>
+      <p class="desc">How often a train article of each category was among the retrieved examples.</p><canvas id="ch-lcat"></canvas></div>
+    <div class="card c7"><h3>Recent queries <span class="badge live" data-live="1">LIVE</span></h3>
+      <p class="desc">Latest first. Accuracy (AUROC/AUPRC) is not shown here: typed queries have no true label; it comes from the evaluation runs.</p><div id="l-recent"></div></div>
+  </div>
+</main>
+<script src="/static/vendor/chart.umd.min.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+let REAL, MOCK, setting = "normal_only", kview = "k0", charts = {};
+
+function theme() {
+  Chart.defaults.color = css("--muted"); Chart.defaults.borderColor = css("--line");
+  Chart.defaults.font.family = "system-ui,-apple-system,Segoe UI,Roboto,sans-serif";
+}
+function draw(id, cfg) { if (charts[id]) charts[id].destroy(); charts[id] = new Chart($(id), cfg); }
+const fmt = (n) => n.toLocaleString("en-US");
+const pctEdges = (e) => e.slice(0, -1).map((x, i) => `${x.toFixed(2)}–${e[i + 1].toFixed(2)}`);
+
+function realPanels() {
+  const r = REAL, a = css("--accent"), b = css("--accent2");
+  $("s-train").textContent = fmt(r.train_articles); $("s-test").textContent = fmt(r.test_articles);
+  $("s-anom").textContent = `${fmt(r.test_anomaly)} (${(100 * r.test_anomaly / r.test_articles).toFixed(1)}%)`;
+  const d = r.distance_only_baseline;
+  $("s-dist").textContent = d.auroc.toFixed(3);
+  $("s-dist-l").textContent = `distance-only AUROC (AUPRC ${d.auprc.toFixed(3)}; random ${d.auprc_random.toFixed(3)})`;
+
+  draw("ch-donut", { type: "doughnut", data: { labels: ["Normal (23 categories)", "Anomaly (Food)"],
+    datasets: [{ data: [r.test_normal, r.test_anomaly], backgroundColor: [a, b], borderWidth: 0 }] },
+    options: { plugins: { legend: { position: "bottom" } }, cutout: "60%" } });
+  draw("ch-cats", { type: "bar", data: { labels: [...r.categories.map(c => c.name), "Food (anomaly)"],
+    datasets: [{ label: "Train", data: [...r.categories.map(c => c.train), 0], backgroundColor: a },
+               { label: "Test", data: [...r.categories.map(c => c.test), r.test_anomaly], backgroundColor: b }] },
+    options: { indexAxis: "y", maintainAspectRatio: false, plugins: { legend: { position: "bottom" } }, scales: { x: { stacked: false } } } });
+  const h = r.distance_hist;
+  draw("ch-dist", { type: "bar", data: { labels: pctEdges(h.bin_edges),
+    datasets: [{ label: `Normal test (mean ${h.mean_normal})`, data: h.normal_pct, backgroundColor: a + "aa" },
+               { label: `Food test (mean ${h.mean_anomaly})`, data: h.anomaly_pct, backgroundColor: b + "aa" }] },
+    options: { plugins: { legend: { position: "bottom" } }, scales: { x: { ticks: { maxTicksLimit: 8 } }, y: { title: { display: true, text: "% of articles" } } } } });
+  draw("ch-food", { type: "bar", data: { labels: r.food_nearest_categories.map(c => c.category),
+    datasets: [{ data: r.food_nearest_categories.map(c => c.count), backgroundColor: b }] },
+    options: { indexAxis: "y", plugins: { legend: { display: false } } } });
+}
+
+const RES_CANVASES = ["ch-k", "ch-sep", "ch-fa", "ch-g"];
+function setResultsState(available) {
+  document.querySelectorAll('[data-res="1"]').forEach(el => { el.textContent = available ? "RESULTS" : "PENDING"; el.className = "badge " + (available ? "real" : "pend"); });
+  for (const id of RES_CANVASES) {
+    const cv = $(id); let box = $(id + "-pend");
+    if (!box) { box = document.createElement("div"); box.id = id + "-pend"; box.className = "pendbox"; box.textContent = "Awaiting evaluation run"; cv.parentNode.insertBefore(box, cv.nextSibling); }
+    box.style.display = available ? "none" : "flex"; cv.style.display = available ? "" : "none";
+    if (!available && charts[id]) { charts[id].destroy(); delete charts[id]; }
+  }
+}
+
+function pendingPanels() {
+  let html = "<table><tr><th>Score</th><th>k</th><th>AUROC</th><th>AUPRC</th></tr>";
+  for (const k of [0, 1, 3, 5]) for (const label of ["LLM", "Fused"])
+    html += `<tr><td>${label}</td><td>${k}${k === 0 ? " (baseline)" : ""}</td><td>–</td><td>–</td></tr>`;
+  html += "<tr><td>Distance only</td><td>–</td><td>–</td><td>–</td></tr></table>";
+  $("tbl").innerHTML = html;
+  $("cost").innerHTML = '<div class="pendbox" style="flex:1">Awaiting evaluation run</div>';
+}
+
+function samplePanels() {
+  setResultsState(!!MOCK.available);
+  if (!MOCK.available) { pendingPanels(); return; }
+  if (MOCK.note) { $("res-note").textContent = MOCK.note; }
+  const m = MOCK, a = css("--accent"), b = css("--accent2"), c = css("--muted");
+  const rows = m.table.filter(t => t.setting === setting);
+  const val = (score, k, key) => (rows.find(t => t.score === score && t.k === k) || {})[key];
+  const best = { auroc: {}, auprc: {} };
+  for (const key of ["auroc", "auprc"]) best[key] = Math.max(...rows.map(t => t[key]));
+  const cell = (v, key) => `<td class="${v === best[key] ? "best" : ""}">${v.toFixed(2)}</td>`;
+  let html = "<table><tr><th>Score</th><th>k</th><th>AUROC</th><th>AUPRC</th></tr>";
+  for (const k of m.ks) for (const [s, label] of [["llm", "LLM"], ["fused", "Fused"]])
+    html += `<tr><td>${label}</td><td>${k}${k === 0 ? " (baseline)" : ""}</td>${cell(val(s, k, "auroc"), "auroc")}${cell(val(s, k, "auprc"), "auprc")}</tr>`;
+  html += `<tr><td>Distance only</td><td>–</td>${cell(val("distance_only", null, "auroc"), "auroc")}${cell(val("distance_only", null, "auprc"), "auprc")}</tr></table>`;
+  $("tbl").innerHTML = html;
+
+  draw("ch-k", { type: "line", data: { labels: m.ks.map(k => `k = ${k}`), datasets: [
+    { label: "LLM score", data: m.ks.map(k => val("llm", k, "auroc")), borderColor: a, backgroundColor: a, tension: .25 },
+    { label: "Fused score", data: m.ks.map(k => val("fused", k, "auroc")), borderColor: b, backgroundColor: b, tension: .25 },
+    { label: "Distance only", data: m.ks.map(() => val("distance_only", null, "auroc")), borderColor: c, borderDash: [6, 4], pointRadius: 0 }] },
+    options: { plugins: { legend: { position: "bottom" } }, scales: { y: { title: { display: true, text: "AUROC" } } } } });
+
+  const sh = m.score_hist, g = sh[kview];
+  draw("ch-sep", { type: "bar", data: { labels: pctEdges(sh.bin_edges), datasets: [
+    { label: "Normal articles", data: g.normal, backgroundColor: a + "aa" },
+    { label: "Anomalies", data: g.anomaly, backgroundColor: b + "aa" }] },
+    options: { plugins: { legend: { position: "bottom" } }, scales: { x: { ticks: { maxTicksLimit: 10 }, title: { display: true, text: "LLM anomaly score" } }, y: { title: { display: true, text: "% of articles" } } } } });
+
+  const fa = m.false_alarm_by_category;
+  draw("ch-fa", { type: "bar", data: { labels: fa.map(x => x.category), datasets: [
+    { label: "k = 0", data: fa.map(x => x.k0), backgroundColor: c },
+    { label: "k = 3", data: fa.map(x => x.k3), backgroundColor: b }] },
+    options: { indexAxis: "y", maintainAspectRatio: false, plugins: { legend: { position: "bottom" } } } });
+
+  draw("ch-g", { type: "bar", data: { labels: ["Without retrieval", "With retrieval"],
+    datasets: [{ data: [m.g_score.without_retrieval, m.g_score.with_retrieval], backgroundColor: [c, a] }] },
+    options: { plugins: { legend: { display: false } }, scales: { y: { min: 0, max: 1, title: { display: true, text: "G_score" } } } } });
+
+  $("cost").innerHTML = ["k0", "k3"].map(k => `<div><div class="stat">${fmt(m.cost[k].tokens)}</div><div class="statlabel">prompt tokens, ${k === "k0" ? "k = 0" : "k = 3"}</div>
+    <div class="stat" style="font-size:22px">${m.cost[k].seconds.toFixed(1)} s</div><div class="statlabel">per query</div></div>`).join("");
+}
+
+let liveSig = "";
+const pct = (a, b) => b ? `${Math.round(100 * a / b)}%` : "–";
+const avgS = (x) => x.n ? (x.seconds / x.n).toFixed(1) : "–";
+const esc = (t) => String(t ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+async function refreshLive(force) {
+  let L;
+  try { L = await fetch("/api/dashboard/live").then(r => r.json()); } catch (e) { return; }
+  const sig = `${L.updated_at}|${L.totals.queries}|${L.totals.baseline_runs}`;
+  if (!force && sig === liveSig) { return; }
+  liveSig = sig;
+  const a = css("--accent"), b = css("--accent2"), c = css("--muted");
+  $("live-upd").textContent = L.totals.queries ? `updated ${new Date(L.updated_at).toLocaleTimeString()} · refreshes every 4 s`
+    : "No queries yet: run one in the demo and this section fills in (it refreshes every 4 s).";
+  $("live-note").textContent = "";
+
+  const T = L.totals, V = L.verdicts, A = L.agreement;
+  $("l-queries").textContent = fmt(T.queries);
+  const bt = V.baseline.anomaly + V.baseline.normal, rt = V.rag.anomaly + V.rag.normal;
+  $("l-anom").textContent = `${pct(V.baseline.anomaly, bt)} / ${pct(V.rag.anomaly, rt)}`;
+  $("l-lat").textContent = `${avgS(L.latency.baseline)} / ${avgS(L.latency.rag)}`;
+  $("l-cite").textContent = pct(L.citations.runs_with_citations, L.citations.rag_runs);
+
+  draw("ch-lverd", { type: "bar", data: { labels: ["Baseline (k = 0)", "Retrieval"], datasets: [
+    { label: "Anomaly", data: [V.baseline.anomaly, V.rag.anomaly], backgroundColor: b },
+    { label: "Normal", data: [V.baseline.normal, V.rag.normal], backgroundColor: a }] },
+    options: { plugins: { legend: { position: "bottom" } }, scales: { y: { beginAtZero: true, ticks: { precision: 0 }, title: { display: true, text: "runs" } } } } });
+  $("l-agree-d").textContent = A.pairs ? `${A.pairs} texts were run both ways (click "Compare with baseline" in the demo to add more).` : 'No text has been run both ways yet: click "Compare with baseline" in the demo.';
+  draw("ch-lagree", { type: "doughnut", data: { labels: ["Same verdict", "Retrieval flags it as anomaly (baseline did not)", "Retrieval clears it (baseline flagged it)"],
+    datasets: [{ data: [A.same_verdict, A.rag_flips_to_anomaly, A.rag_flips_to_normal], backgroundColor: [c, b, a], borderWidth: 0 }] },
+    options: { plugins: { legend: { position: "bottom" } }, cutout: "55%" } });
+
+  const sh = L.score_hist;
+  draw("ch-lscore", { type: "bar", data: { labels: pctEdges(sh.bin_edges), datasets: [
+    { label: "Baseline", data: sh.baseline, backgroundColor: c + "cc" }, { label: "Retrieval", data: sh.rag, backgroundColor: a + "cc" }] },
+    options: { plugins: { legend: { position: "bottom" } }, scales: { x: { ticks: { maxTicksLimit: 10 } }, y: { beginAtZero: true, ticks: { precision: 0 } } } } });
+  const dh = L.distance_hist;
+  draw("ch-ldist", { type: "bar", data: { labels: pctEdges(dh.bin_edges), datasets: [{ label: "Queries", data: dh.nearest, backgroundColor: b + "cc" }] },
+    options: { plugins: { legend: { display: false } }, scales: { x: { ticks: { maxTicksLimit: 8 } }, y: { beginAtZero: true, ticks: { precision: 0 } } } } });
+  const cats = Object.entries(L.retrieved_categories).sort((x, y) => y[1] - x[1]).slice(0, 12);
+  draw("ch-lcat", { type: "bar", data: { labels: cats.map(x => x[0]), datasets: [{ data: cats.map(x => x[1]), backgroundColor: a, maxBarThickness: 26 }] },
+    options: { indexAxis: "y", maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { ticks: { precision: 0 } } } } });
+
+  const sc = (v) => v == null ? "–" : v.toFixed(2);
+  $("l-recent").innerHTML = L.recent.length ? "<table><tr><th class='txt'>Text</th><th>Setting</th><th>k</th><th>Base</th><th>Retr.</th><th>Cited</th><th>Dist.</th></tr>" +
+    L.recent.map(r => `<tr><td class="txt" title="${esc(r.text)}">${esc(r.text)}</td><td>${r.setting === "normal_only" ? "normal" : "normal+anom"}</td><td>${r.k}</td><td>${sc(r.baseline_score)}</td><td>${sc(r.rag_score)}</td><td>${r.citations}</td><td>${r.nearest_distance ?? "–"}</td></tr>`).join("") + "</table>"
+    : '<p class="desc">No queries yet.</p>';
+}
+$("live-reset").addEventListener("click", async () => { await fetch("/api/dashboard/live", { method: "DELETE" }); refreshLive(true); });
+
+function wire(id, setter) {
+  $(id).addEventListener("click", (e) => {
+    if (e.target.tagName !== "BUTTON") return;
+    [...$(id).children].forEach(x => x.classList.toggle("on", x === e.target));
+    setter(e.target.dataset.v); samplePanels();
+  });
+}
+wire("tog-setting", (v) => { setting = v; });
+wire("tog-k", (v) => { kview = v; });
+
+(async () => {
+  theme();
+  [REAL, MOCK] = await Promise.all(["real", "results"].map(n => fetch(`/api/dashboard/${n}`).then(r => r.json())));
+  realPanels(); samplePanels();
+  await refreshLive(true);
+  setInterval(refreshLive, 4000);   // live panels update by themselves
+})();
+</script>
+</body>
+</html>

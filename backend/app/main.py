@@ -1,30 +1,44 @@
 """
-RAD-LLM Backend — FastAPI application entrypoint.
+Meta-RAAD Backend — FastAPI application entrypoint.
 
-Current scope: application scaffolding + health checks only. The RAG-AD
-retrieval, self-consistency scoring, and explanation-quality-judge endpoints
-described in RAD-LLM_Framework_Specification.md will be added as additional
-routers under app/api/ in a later step.
+Current scope: health check, the RA-ZAD detection demo (/detect/compare plus the
+page at "/") and the dashboard at /dashboard. FG-MOS and G_score will be added as additional
+routers under app/api/ later.
 """
 
-from fastapi import FastAPI
+from pathlib import Path
 
-from app.api import health, rag
+from fastapi import FastAPI
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
+
+from app.api import dashboard, detect, health
 from app.core.config import settings
 
 app = FastAPI(
     title=settings.app_name,
     version=settings.app_version,
-    description="Backend service for the RAD-LLM anomaly detection pipeline "
-    "(RAG-AD retrieval, self-consistency scoring, explanation-quality "
-    "evaluation). Self-consistency scoring and explanation-quality "
-    "evaluation are implemented in a later step.",
+    description="Backend service for the Meta-RAAD anomaly detection framework "
+    "(RA-ZAD retrieval-augmented detection, FG-MOS model selection, "
+    "G_score grounding metric).",
 )
 
 app.include_router(health.router)
-app.include_router(rag.router)
+app.include_router(detect.router)
+app.include_router(dashboard.router)
+
+_STATIC = Path(__file__).parent / "static"
+app.mount("/static", StaticFiles(directory=_STATIC), name="static")
 
 
-@app.get("/")
-def root() -> dict:
-    return {"message": f"{settings.app_name} is running. See /docs for the API reference."}
+@app.get("/", include_in_schema=False)
+def demo_page() -> FileResponse:
+    """Demo page: grounded anomaly detection with an optional baseline comparison."""
+    return FileResponse(_STATIC / "index.html")
+
+
+@app.get("/dashboard", include_in_schema=False)
+def dashboard_page() -> FileResponse:
+    """Dashboard: real N24 data statistics plus sample-data result panels."""
+    return FileResponse(_STATIC / "dashboard.html")
+

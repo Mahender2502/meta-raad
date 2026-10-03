@@ -1,5 +1,5 @@
 # =============================================================================
-# RAD-LLM: LLM-Based Anomaly Detection Research Project
+# Meta-RAAD: LLM-Based Anomaly Detection Research Project
 # Python Dependencies
 # =============================================================================
 
@@ -28,14 +28,6 @@ pyod>=1.1.0
 torch>=2.0.0
 transformers>=4.35.0
 accelerate>=0.24.0
-
-# -----------------------------------------------------------------------------
-# Embedding & Vector Store
-# sentence-transformers: generates dense embeddings for anomaly scoring
-# chromadb: lightweight vector database for embedding storage and retrieval
-# -----------------------------------------------------------------------------
-sentence-transformers>=2.2.0
-chromadb>=0.4.22
 
 # -----------------------------------------------------------------------------
 # LLM API Client
