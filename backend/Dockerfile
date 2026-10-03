@@ -4,8 +4,8 @@
 # This is the backend service's own image — separate from the root
 # Dockerfile (which builds the heavier research/experiment environment with
 # torch, jupyter, pyod, etc.). This image only installs what the FastAPI
-# service needs to run: fastapi/uvicorn, a ChromaDB client, sentence
-# embeddings, and the OpenAI SDK.
+# service needs to run: fastapi/uvicorn, NumPy, BERT (transformers + torch),
+# and the OpenAI SDK (used for any OpenAI-compatible LLM provider).
 #
 # Build (standalone):  docker build -t rad-llm-backend ./backend
 # Build (via compose):  docker compose build backend
@@ -16,7 +16,7 @@ FROM python:3.11-slim
 
 # ---- System dependencies ----------------------------------------------------
 # build-essential is needed for some packages that compile C extensions
-# (e.g., chromadb's dependencies); curl is handy for container healthchecks.
+# in some dependencies; curl is handy for container healthchecks.
 RUN apt-get update && apt-get install -y --no-install-recommends \
         build-essential \
         curl \
@@ -28,6 +28,10 @@ WORKDIR /app
 # Copied first so Docker can cache this layer independently of app code
 # changes.
 COPY requirements.txt .
+# CPU-only PyTorch first: the default wheel pulls several GB of CUDA libraries
+# that this container (bert_device=cpu) never uses. transformers then sees
+# torch as already installed.
+RUN pip install --no-cache-dir --retries 5 --timeout 120 torch --index-url https://download.pytorch.org/whl/cpu
 RUN pip install --no-cache-dir -r requirements.txt
 
 # ---- Application code --------------------------------------------------------

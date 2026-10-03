@@ -1,51 +1,19 @@
 # =============================================================================
 # Meta-RAAD: Docker Compose Configuration
 #
-# Services:
-#   chromadb   — Standalone ChromaDB vector database (single instance, with a
-#                named/bind volume for persistent storage).
-#   backend    — FastAPI application container. Hosts the RAG endpoint
-#                (POST /rag/query, POST /rag/index) backed by ChromaDB and
-#                BAAI/bge-base-en-v1.5 embeddings (sentence-transformers),
-#                plus a provider-agnostic LLM client (app/services/
-#                llm_client.py) — the model/provider is not decided yet and
-#                defaults to a stub client via LLM_PROVIDER=stub. FG-MOS and
-#                G_score are added in a later step.
+# One service:
+#   backend — FastAPI app. Serves the demo page at / and POST /detect/compare.
+#             Retrieval memory = the NLP-ADBench train split (BERT vectors +
+#             text) loaded into memory from ./data (fetch it with
+#             `python scripts/download_data.py`). No vector database.
 #
 # Usage:
-#   docker compose up -d --build      # Build and start ChromaDB + backend
-#   docker compose logs -f backend    # Follow backend logs
-#
+#   python scripts/download_data.py          # once: fetch data into ./data/n24
+#   docker compose up -d --build             # build and start the backend
+#   open http://localhost:8180
 # =============================================================================
 
 services:
-
-  # ---------------------------------------------------------------------------
-  # ChromaDB — Vector database for embedding storage and similarity search
-  #
-  # Single instance. Data is persisted to ./data/embeddings/chroma via a bind
-  # mount so it survives container restarts/rebuilds. Reachable from the
-  # backend service at http://chromadb:8000.
-  # ---------------------------------------------------------------------------
-  chromadb:
-    image: chromadb/chroma:1.4.4   # pinned; the N24 index was verified against this version
-    container_name: rad-llm-chromadb
-    ports:
-      # ChromaDB HTTP API (exposed on host too, for local debugging/tools)
-      - "8000:8000"
-    volumes:
-      # Persist embedding data outside the container.
-      - ./data/embeddings/chroma:/data
-    restart: unless-stopped
-
-  # ---------------------------------------------------------------------------
-  # Backend — FastAPI service
-  #
-  # All backend code, its Dockerfile, and its own requirements.txt live in
-  # ./backend (self-contained, separate from the root research/notebook
-  # environment). The RAG endpoint is implemented; RA-ZAD detection,
-  # FG-MOS and G_score endpoints are added in a later step.
-  # ---------------------------------------------------------------------------
   backend:
     build:
       context: ./backend
@@ -55,26 +23,23 @@ services:
       # Mount the backend directory so code changes are reflected immediately
       # without rebuilding the image.
       - ./backend:/app
+      # Benchmark vectors and text for the retrieval memory (read-only).
+      - ./data:/data:ro
+      # Keep the downloaded BERT weights across container re-creation.
+      - hf_cache:/root/.cache/huggingface
     env_file:
-      # Load API keys (OPENAI_API_KEY, etc.) and CHROMA_HOST/CHROMA_PORT
-      # from a .env file. Create one from .env.example before first run.
+      # LLM provider and API keys (see .env.example). Create .env first.
       - .env
     environment:
-      # Lets application code resolve the ChromaDB service by name inside
-      # the compose network instead of hardcoding "localhost".
-      - CHROMA_HOST=chromadb
-      - CHROMA_PORT=8000
-      # LLM provider is undecided — defaults to a stub client so the RAG
-      # endpoint runs end-to-end without any API key. Override via .env
-      # (LLM_PROVIDER=openai|deepseek, plus the matching *_API_KEY) once a
-      # model is chosen; no code changes needed in app/services/rag_service.py.
       - LLM_PROVIDER=${LLM_PROVIDER:-stub}
+      - DATA_DIR=/data
     ports:
-      # FastAPI (uvicorn)
-      - "8080:8080"
-    depends_on:
-      - chromadb
+      # FastAPI (uvicorn). Host port 8180 (not 8080) to avoid clashing with other local services.
+      - "8180:8080"
     # Defined in backend/Dockerfile; repeated here so docker-compose.yml is
     # self-documenting when read on its own.
     command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--reload"]
     restart: unless-stopped
+
+volumes:
+  hf_cache:

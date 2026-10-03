@@ -1,0 +1,266 @@
+{
+ "source": "NLP-ADBench N24News, precomputed bert-base-uncased vectors",
+ "train_articles": 40595,
+ "test_articles": 19227,
+ "test_normal": 17399,
+ "test_anomaly": 1828,
+ "anomaly_category": "Food",
+ "categories": [
+  {
+   "name": "Art & Design",
+   "train": 2137,
+   "test": 860
+  },
+  {
+   "name": "Television",
+   "train": 2134,
+   "test": 867
+  },
+  {
+   "name": "Media",
+   "train": 2121,
+   "test": 876
+  },
+  {
+   "name": "Science",
+   "train": 2119,
+   "test": 852
+  },
+  {
+   "name": "Sports",
+   "train": 2113,
+   "test": 887
+  },
+  {
+   "name": "Theater",
+   "train": 2111,
+   "test": 887
+  },
+  {
+   "name": "Travel",
+   "train": 2105,
+   "test": 872
+  },
+  {
+   "name": "Music",
+   "train": 2105,
+   "test": 893
+  },
+  {
+   "name": "Real Estate",
+   "train": 2103,
+   "test": 894
+  },
+  {
+   "name": "Dance",
+   "train": 2101,
+   "test": 873
+  },
+  {
+   "name": "Fashion & Style",
+   "train": 2097,
+   "test": 894
+  },
+  {
+   "name": "Health",
+   "train": 2095,
+   "test": 896
+  },
+  {
+   "name": "Books",
+   "train": 2094,
+   "test": 907
+  },
+  {
+   "name": "Technology",
+   "train": 2084,
+   "test": 912
+  },
+  {
+   "name": "Opinion",
+   "train": 2044,
+   "test": 951
+  },
+  {
+   "name": "Movies",
+   "train": 2043,
+   "test": 930
+  },
+  {
+   "name": "Style",
+   "train": 1839,
+   "test": 838
+  },
+  {
+   "name": "Automobiles",
+   "train": 1205,
+   "test": 551
+  },
+  {
+   "name": "Economy",
+   "train": 1184,
+   "test": 573
+  },
+  {
+   "name": "Your Money",
+   "train": 892,
+   "test": 370
+  },
+  {
+   "name": "Global Business",
+   "train": 812,
+   "test": 370
+  },
+  {
+   "name": "Education",
+   "train": 587,
+   "test": 235
+  },
+  {
+   "name": "Well",
+   "train": 470,
+   "test": 211
+  }
+ ],
+ "distance_hist": {
+  "bin_edges": [
+   0.0,
+   0.01,
+   0.02,
+   0.03,
+   0.04,
+   0.05,
+   0.06,
+   0.07,
+   0.08,
+   0.09,
+   0.1,
+   0.11,
+   0.12,
+   0.13,
+   0.14,
+   0.15,
+   0.16,
+   0.17,
+   0.18,
+   0.19,
+   0.2,
+   0.21,
+   0.22,
+   0.23,
+   0.24,
+   0.25,
+   0.26,
+   0.27,
+   0.28,
+   0.29,
+   0.3
+  ],
+  "normal_pct": [
+   0.115,
+   0.057,
+   0.121,
+   0.368,
+   1.443,
+   4.132,
+   9.282,
+   15.15,
+   18.323,
+   17.938,
+   13.254,
+   8.903,
+   5.138,
+   2.96,
+   1.477,
+   0.695,
+   0.368,
+   0.149,
+   0.069,
+   0.04,
+   0.011,
+   0.006,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  "anomaly_pct": [
+   0.164,
+   0.821,
+   0.328,
+   0.055,
+   0.055,
+   0.383,
+   2.298,
+   6.783,
+   14.825,
+   18.053,
+   17.123,
+   14.442,
+   10.394,
+   6.291,
+   3.72,
+   2.243,
+   0.766,
+   0.821,
+   0.274,
+   0.055,
+   0.055,
+   0.055,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  "mean_normal": 0.092,
+  "mean_anomaly": 0.1053
+ },
+ "food_nearest_categories": [
+  {
+   "category": "Travel",
+   "count": 654
+  },
+  {
+   "category": "Style",
+   "count": 236
+  },
+  {
+   "category": "Fashion & Style",
+   "count": 168
+  },
+  {
+   "category": "Books",
+   "count": 122
+  },
+  {
+   "category": "Real Estate",
+   "count": 120
+  },
+  {
+   "category": "Health",
+   "count": 114
+  },
+  {
+   "category": "Art & Design",
+   "count": 49
+  },
+  {
+   "category": "Technology",
+   "count": 44
+  }
+ ],
+ "distance_only_baseline": {
+  "definition": "cosine distance to the nearest train article; test Food = 1",
+  "auroc": 0.6682,
+  "auprc": 0.1653,
+  "auprc_random": 0.0951
+ }
+}

@@ -1,0 +1,385 @@
+{
+ "note": "EXAMPLE FORMAT with placeholder numbers; not results. Not read by the dashboard.",
+ "ks": [
+  0,
+  1,
+  3,
+  5
+ ],
+ "table": [
+  {
+   "setting": "normal_only",
+   "k": 0,
+   "score": "llm",
+   "auroc": 0.74,
+   "auprc": 0.41
+  },
+  {
+   "setting": "normal_only",
+   "k": 0,
+   "score": "fused",
+   "auroc": 0.76,
+   "auprc": 0.42
+  },
+  {
+   "setting": "normal_only",
+   "k": 1,
+   "score": "llm",
+   "auroc": 0.77,
+   "auprc": 0.42
+  },
+  {
+   "setting": "normal_only",
+   "k": 1,
+   "score": "fused",
+   "auroc": 0.8,
+   "auprc": 0.44
+  },
+  {
+   "setting": "normal_only",
+   "k": 3,
+   "score": "llm",
+   "auroc": 0.81,
+   "auprc": 0.45
+  },
+  {
+   "setting": "normal_only",
+   "k": 3,
+   "score": "fused",
+   "auroc": 0.84,
+   "auprc": 0.46
+  },
+  {
+   "setting": "normal_only",
+   "k": 5,
+   "score": "llm",
+   "auroc": 0.8,
+   "auprc": 0.44
+  },
+  {
+   "setting": "normal_only",
+   "k": 5,
+   "score": "fused",
+   "auroc": 0.83,
+   "auprc": 0.46
+  },
+  {
+   "setting": "normal_only",
+   "k": null,
+   "score": "distance_only",
+   "auroc": 0.66,
+   "auprc": 0.17
+  },
+  {
+   "setting": "normal_anomaly",
+   "k": 0,
+   "score": "llm",
+   "auroc": 0.9,
+   "auprc": 0.5
+  },
+  {
+   "setting": "normal_anomaly",
+   "k": 0,
+   "score": "fused",
+   "auroc": 0.91,
+   "auprc": 0.5
+  },
+  {
+   "setting": "normal_anomaly",
+   "k": 1,
+   "score": "llm",
+   "auroc": 0.91,
+   "auprc": 0.5
+  },
+  {
+   "setting": "normal_anomaly",
+   "k": 1,
+   "score": "fused",
+   "auroc": 0.92,
+   "auprc": 0.51
+  },
+  {
+   "setting": "normal_anomaly",
+   "k": 3,
+   "score": "llm",
+   "auroc": 0.92,
+   "auprc": 0.51
+  },
+  {
+   "setting": "normal_anomaly",
+   "k": 3,
+   "score": "fused",
+   "auroc": 0.93,
+   "auprc": 0.51
+  },
+  {
+   "setting": "normal_anomaly",
+   "k": 5,
+   "score": "llm",
+   "auroc": 0.92,
+   "auprc": 0.51
+  },
+  {
+   "setting": "normal_anomaly",
+   "k": 5,
+   "score": "fused",
+   "auroc": 0.93,
+   "auprc": 0.51
+  },
+  {
+   "setting": "normal_anomaly",
+   "k": null,
+   "score": "distance_only",
+   "auroc": 0.66,
+   "auprc": 0.17
+  }
+ ],
+ "score_hist": {
+  "bin_edges": [
+   0.0,
+   0.05,
+   0.1,
+   0.15,
+   0.2,
+   0.25,
+   0.3,
+   0.35,
+   0.4,
+   0.45,
+   0.5,
+   0.55,
+   0.6,
+   0.65,
+   0.7,
+   0.75,
+   0.8,
+   0.85,
+   0.9,
+   0.95,
+   1.0
+  ],
+  "k0": {
+   "normal": [
+    30.1,
+    22.58,
+    16.38,
+    11.48,
+    6.5,
+    4.9,
+    3.72,
+    1.78,
+    1.23,
+    0.55,
+    0.45,
+    0.25,
+    0.1,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "anomaly": [
+    0.05,
+    0.55,
+    1.45,
+    1.8,
+    3.65,
+    4.88,
+    5.55,
+    6.38,
+    7.9,
+    8.52,
+    8.28,
+    9.45,
+    8.57,
+    8.2,
+    7.62,
+    6.15,
+    5.0,
+    3.5,
+    2.12,
+    0.38
+   ]
+  },
+  "k3": {
+   "normal": [
+    37.4,
+    24.32,
+    15.72,
+    9.4,
+    5.85,
+    3.3,
+    1.82,
+    1.15,
+    0.8,
+    0.1,
+    0.12,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0,
+    0.0
+   ],
+   "anomaly": [
+    0.0,
+    0.05,
+    0.12,
+    0.28,
+    0.72,
+    0.75,
+    1.45,
+    2.33,
+    3.65,
+    4.47,
+    7.0,
+    7.95,
+    8.72,
+    9.75,
+    11.68,
+    10.88,
+    10.98,
+    9.68,
+    6.85,
+    2.7
+   ]
+  }
+ },
+ "false_alarm_by_category": [
+  {
+   "category": "Art & Design",
+   "k0": 0.048,
+   "k3": 0.034
+  },
+  {
+   "category": "Television",
+   "k0": 0.123,
+   "k3": 0.059
+  },
+  {
+   "category": "Media",
+   "k0": 0.062,
+   "k3": 0.029
+  },
+  {
+   "category": "Science",
+   "k0": 0.044,
+   "k3": 0.022
+  },
+  {
+   "category": "Sports",
+   "k0": 0.078,
+   "k3": 0.035
+  },
+  {
+   "category": "Theater",
+   "k0": 0.108,
+   "k3": 0.064
+  },
+  {
+   "category": "Travel",
+   "k0": 0.074,
+   "k3": 0.126
+  },
+  {
+   "category": "Music",
+   "k0": 0.136,
+   "k3": 0.077
+  },
+  {
+   "category": "Real Estate",
+   "k0": 0.035,
+   "k3": 0.02
+  },
+  {
+   "category": "Dance",
+   "k0": 0.081,
+   "k3": 0.05
+  },
+  {
+   "category": "Fashion & Style",
+   "k0": 0.081,
+   "k3": 0.138
+  },
+  {
+   "category": "Health",
+   "k0": 0.067,
+   "k3": 0.043
+  },
+  {
+   "category": "Books",
+   "k0": 0.126,
+   "k3": 0.072
+  },
+  {
+   "category": "Technology",
+   "k0": 0.089,
+   "k3": 0.066
+  },
+  {
+   "category": "Opinion",
+   "k0": 0.074,
+   "k3": 0.037
+  },
+  {
+   "category": "Movies",
+   "k0": 0.078,
+   "k3": 0.049
+  },
+  {
+   "category": "Style",
+   "k0": 0.126,
+   "k3": 0.213
+  },
+  {
+   "category": "Automobiles",
+   "k0": 0.124,
+   "k3": 0.089
+  },
+  {
+   "category": "Economy",
+   "k0": 0.072,
+   "k3": 0.039
+  },
+  {
+   "category": "Your Money",
+   "k0": 0.079,
+   "k3": 0.044
+  },
+  {
+   "category": "Global Business",
+   "k0": 0.138,
+   "k3": 0.066
+  },
+  {
+   "category": "Education",
+   "k0": 0.086,
+   "k3": 0.05
+  },
+  {
+   "category": "Well",
+   "k0": 0.115,
+   "k3": 0.195
+  }
+ ],
+ "g_score": {
+  "without_retrieval": 0.31,
+  "with_retrieval": 0.62
+ },
+ "cost": {
+  "k0": {
+   "tokens": 1100,
+   "seconds": 1.8
+  },
+  "k3": {
+   "tokens": 2400,
+   "seconds": 2.6
+  }
+ }
+}

@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meta-RAAD Demo</title>
+<style>
+  :root { --bg:#f6f7f9; --card:#fff; --ink:#1b1f24; --muted:#5d6672; --line:#dfe3e8;
+          --accent:#2457d6; --bad:#c62828; --good:#1b7f3b; --warn:#9a5b00; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#14171b; --card:#1d2127; --ink:#e8ebef; --muted:#9aa4b2; --line:#2e353d;
+            --accent:#7aa2ff; --bad:#ff7b72; --good:#56d364; --warn:#e3b341; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+         font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+  main { max-width:1100px; margin:0 auto; padding:24px 16px 48px; }
+  h1 { font-size:22px; margin:0 0 4px; }
+  .sub { color:var(--muted); margin:0 0 20px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; }
+  textarea { width:100%; min-height:110px; resize:vertical; padding:10px; border-radius:8px;
+             border:1px solid var(--line); background:var(--bg); color:var(--ink); font:inherit; }
+  .row { display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-top:12px; }
+  label { color:var(--muted); font-size:13px; }
+  select, input[type=number] { padding:6px 8px; border-radius:6px; border:1px solid var(--line);
+             background:var(--bg); color:var(--ink); font:inherit; }
+  button { padding:8px 18px; border:0; border-radius:8px; background:var(--accent); color:#fff;
+           font:inherit; font-weight:600; cursor:pointer; }
+  button:disabled { opacity:.6; cursor:default; }
+  .examples button { background:transparent; color:var(--accent); border:1px solid var(--line);
+           font-weight:500; padding:4px 10px; font-size:13px; }
+  .grid { display:grid; grid-template-columns:1fr; gap:16px; margin-top:20px; }
+  .grid.two { grid-template-columns:1fr 1fr; }
+  @media (max-width:760px) { .grid.two { grid-template-columns:1fr; } }
+  .linkbtn { background:transparent; color:var(--accent); border:1px solid var(--line); font-weight:500;
+             padding:6px 12px; font-size:13px; margin-top:12px; }
+  h2 { font-size:15px; margin:0 0 2px; }
+  .tag { color:var(--muted); font-size:12px; margin-bottom:10px; }
+  .score { font-size:34px; font-weight:700; line-height:1.1; }
+  .verdict { display:inline-block; margin-left:8px; font-size:13px; font-weight:700;
+             padding:2px 8px; border-radius:99px; border:1px solid currentColor; }
+  .anomaly { color:var(--bad); } .normal { color:var(--good); }
+  .bar { height:8px; background:var(--line); border-radius:99px; margin:10px 0; overflow:hidden; }
+  .bar > i { display:block; height:100%; background:currentColor; }
+  .reason { margin:6px 0 0; }
+  .err { color:var(--warn); }
+  details { margin-top:10px; color:var(--muted); font-size:13px; }
+  pre { white-space:pre-wrap; background:var(--bg); border:1px solid var(--line); border-radius:8px;
+        padding:10px; max-height:260px; overflow:auto; font-size:12px; color:var(--ink); }
+  .ex { border-top:1px solid var(--line); padding:10px 0; font-size:14px; }
+  .ex:first-child { border-top:0; }
+  .cat { font-weight:700; font-size:12px; color:var(--accent); }
+  .cat.anom { color:var(--bad); }
+  .dist { color:var(--muted); font-size:12px; }
+  #status { color:var(--muted); font-size:13px; }
+  .cite { display:inline-block; min-width:20px; text-align:center; font-size:11px; font-weight:700;
+          padding:0 5px; border-radius:6px; background:var(--accent); color:#fff; vertical-align:1px; }
+  .src { border-top:1px solid var(--line); margin-top:12px; padding-top:10px; font-size:13px; }
+  .src h3 { font-size:13px; margin:0 0 6px; }
+  .src .item { margin:6px 0; }
+  .ex.cited { background:color-mix(in srgb, var(--accent) 10%, transparent); padding-left:8px;
+              border-left:3px solid var(--accent); }
+  .doc { color:var(--muted); font-size:12px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Meta-RAAD: grounded text anomaly detection</h1>
+  <p style="margin:0 0 6px"><a href="/dashboard" style="color:var(--accent);font-weight:600;text-decoration:none">Dashboard →</a></p>
+  <p class="sub">Type a text. The model judges whether it is an anomaly for the N24 News categories, after seeing the most similar real (normal) articles from the training data, and cites the ones it used.</p>
+
+  <div class="card">
+    <textarea id="text" placeholder="Paste or type a text to check…"></textarea>
+    <div class="row examples">
+      <label>Try:</label>
+      <button data-t="The Lakers beat the Celtics 108-102 in overtime on Sunday night, with LeBron James scoring 34 points.">Sports</button>
+      <button data-t="Mix the flour and butter, fold in the eggs, then simmer the tomato sauce for twenty minutes before adding fresh basil.">Recipe (Food = anomaly)</button>
+      <button data-t="The Federal Reserve held interest rates steady on Wednesday, citing persistent inflation in services.">Economy</button>
+    </div>
+    <div class="row">
+      <label>Setting
+        <select id="setting">
+          <option value="normal_only">Normal only</option>
+          <option value="normal_anomaly">Normal + anomaly category</option>
+        </select></label>
+      <label>k (examples)
+        <input id="k" type="number" min="1" max="10" value="3" style="width:64px"></label>
+      <button id="go">Detect</button>
+      <span id="status"></span>
+    </div>
+  </div>
+
+  <div id="out" class="grid" hidden>
+    <section class="card" id="rag"></section>
+    <section class="card" id="base" hidden></section>
+  </div>
+  <div id="ctx" class="card" style="margin-top:16px" hidden></div>
+</main>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+document.querySelectorAll(".examples button").forEach(b =>
+  b.addEventListener("click", () => { $("text").value = b.dataset.t; }));
+
+// Turn "[2]" markers in the model's reason into numbered badges (escaped first).
+const withBadges = (s) => esc(s).replace(/\[(\d{1,2})\]/g, '<span class="cite">$1</span>');
+
+function sources(d, retrieved) {
+  if (!retrieved || d.score == null) return "";
+  if (!d.citations.length)
+    return `<div class="src"><h3>Sources cited</h3><span class="doc">The model did not cite any retrieved example.</span></div>`;
+  return `<div class="src"><h3>Sources cited</h3>` + d.citations.map(n => {
+    const e = retrieved.find(x => x.number === n); if (!e) return "";
+    return `<div class="item"><span class="cite">${n}</span> <b>${esc(e.category)}</b>
+      <span class="doc">· ${esc(e.doc_id || e.chunk_id || "")}</span><div>${esc(e.text.slice(0, 220))}${e.text.length > 220 ? "…" : ""}</div></div>`;
+  }).join("") + `</div>`;
+}
+
+function panel(el, title, tag, d, retrieved) {
+  let body;
+  if (d.score == null) {
+    body = `<p class="err">${esc(d.error || "No result")}</p>`;
+  } else {
+    const cls = d.verdict === "anomaly" ? "anomaly" : "normal";
+    body = `<div class="${cls}">
+        <span class="score">${d.score.toFixed(2)}</span>
+        <span class="verdict">${esc(d.verdict)}</span>
+        <div class="bar"><i style="width:${Math.round(d.score*100)}%"></i></div></div>
+      <p class="reason">${withBadges(d.reason || "")}</p>${sources(d, retrieved)}`;
+  }
+  el.innerHTML = `<h2>${title}</h2><div class="tag">${tag}${d.model ? " · " + esc(d.model) : ""}</div>${body}
+    <details><summary>Prompt sent</summary><pre>${esc(d.prompt)}</pre></details>`;
+}
+
+let last = null; // the request behind the result on screen
+
+async function call(body) {
+  const res = await fetch("/detect/compare", {
+    method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(body)
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.detail || res.statusText);
+  return data;
+}
+
+function showCompareButton() {
+  const holder = document.createElement("div");
+  holder.innerHTML = `<button class="linkbtn" id="cmp">Compare with baseline (no retrieval, k = 0)</button>`;
+  $("rag").appendChild(holder);
+  $("cmp").addEventListener("click", async () => {
+    $("cmp").disabled = true; $("status").textContent = "Running baseline…";
+    try {
+      const data = await call({ ...last, run_rag: false, run_baseline: true });
+      panel($("base"), "Baseline", "Category names only, no retrieval (k = 0)", data.baseline, null);
+      $("base").hidden = false; $("out").classList.add("two");
+      $("cmp").remove(); $("status").textContent = "";
+    } catch (err) { $("status").textContent = "Error: " + err.message; $("cmp").disabled = false; }
+  });
+}
+
+$("go").addEventListener("click", async () => {
+  const text = $("text").value.trim();
+  if (!text) return;
+  $("go").disabled = true; $("status").textContent = "Running…";
+  try {
+    last = { text, setting: $("setting").value, k: +$("k").value };
+    const data = await call({ ...last, run_baseline: false, run_rag: true });
+    $("out").hidden = false; $("base").hidden = true; $("out").classList.remove("two");
+    panel($("rag"), "Result", `Compared with the ${data.k} most similar normal articles from the training data`, data.rag, data.retrieved);
+    showCompareButton();
+    $("ctx").hidden = false;
+    $("ctx").innerHTML = `<h2>Retrieved training articles</h2><div class="tag">Nearest normal articles, as seen by the model. Highlighted = cited in its answer.</div>` +
+      data.retrieved.map(e => `<div class="ex ${data.rag.citations.includes(e.number) ? "cited" : ""}"><span class="cite">${e.number}</span> <span class="cat">${esc(e.category)}</span>
+        <span class="doc">${esc(e.doc_id || "")}</span>
+        <span class="dist">distance ${e.distance == null ? "-" : e.distance.toFixed(3)}</span><div>${esc(e.text.slice(0, 400))}${e.text.length > 400 ? "…" : ""}</div></div>`).join("");
+    $("status").textContent = "";
+  } catch (err) {
+    $("status").textContent = "Error: " + err.message;
+  } finally { $("go").disabled = false; }
+});
+</script>
+</body>
+</html>

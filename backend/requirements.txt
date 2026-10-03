@@ -18,16 +18,12 @@ pydantic-settings>=2.2.0
 httpx>=0.27.0
 
 # -----------------------------------------------------------------------------
-# Vector store client (ChromaDB is run as its own container; this is just
-# the Python client used to talk to it over HTTP)
+# Retrieval memory and query embedding: exact cosine kNN in NumPy over the
+# benchmark's precomputed BERT vectors; typed text is embedded with
+# bert-base-uncased (torch is installed first in the Dockerfile, CPU-only).
 # -----------------------------------------------------------------------------
-chromadb==1.4.4          # keep in sync with the chromadb server image in docker-compose.yml
-
-# -----------------------------------------------------------------------------
-# Embeddings (used by the retriever to embed queries/documents before
-# storing/searching them in ChromaDB)
-# -----------------------------------------------------------------------------
-sentence-transformers>=2.2.0
+numpy>=1.24.0
+transformers>=4.35.0
 
 # -----------------------------------------------------------------------------
 # LLM API clients (RA-ZAD detection / FG-MOS

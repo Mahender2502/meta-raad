@@ -2,9 +2,9 @@
 Application settings for the Meta-RAAD backend.
 
 Values are loaded from environment variables (populated via the .env file
-referenced in docker-compose.yml). This gives the RAG endpoint, the LLM
-client factory, and later RA-ZAD detection, FG-MOS and G_score logic a
-single place to read configuration from.
+referenced in docker-compose.yml). This gives the retrieval memory, the LLM
+client factory, and later FG-MOS and G_score logic a single place to read
+configuration from.
 """
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -17,23 +17,22 @@ class Settings(BaseSettings):
     app_name: str = "Meta-RAAD Backend"
     app_version: str = "0.1.0"
 
-    # --- ChromaDB connection (overridden to 'chromadb' inside docker-compose) ---
-    chroma_host: str = "localhost"
-    chroma_port: int = 8000
-    chroma_collection_prefix: str = "rad_llm"
+    # --- Retrieval memory: the benchmark's precomputed BERT vectors + train text ---
+    # Files live in <data_dir>/<dataset subdir>/ (see app/core/datasets.py); in the
+    # container ./data is mounted at /data. Typed text is embedded with the same
+    # model and recipe that produced the stored vectors (CLS token, max 512 tokens).
+    data_dir: str = "/data"
+    bert_model: str = "bert-base-uncased"
+    bert_device: str = "cpu"
 
-    # --- Embedding model for retrieval (RA-ZAD) ---
-    # BAAI/bge-base-en-v1.5 via sentence-transformers. BGE models are trained
-    # with an instruction prefix on the *query* side only (not on documents) —
-    # see EMBEDDING_QUERY_INSTRUCTION below, used by app/services/embedder.py.
-    embedding_model: str = "BAAI/bge-base-en-v1.5"
-    embedding_query_instruction: str = "Represent this sentence for searching relevant passages: "
-    embedding_device: str = "cpu"
+    # --- Dashboard data (JSON files, see app/services/stats.py) ---
+    # Inside the container ./backend is mounted at /app, so /app/data is backend/data on the host.
+    stats_dir: str = "/app/data"
 
     # --- LLM client (provider-agnostic — see app/services/llm_client.py) ---
-    # Which concrete LLMClient implementation the factory should build. Left
-    # unset ("stub") until we decide on GPT-4o / DeepSeek / Llama etc.; the
-    # RAG pipeline itself does not change when this is swapped.
+    # Which concrete LLMClient implementation the factory should build
+    # ("stub", "gemini", "groq", "openai", ...); detection logic does not change
+    # when this is swapped.
     llm_provider: str = "stub"
     llm_model_name: str | None = None
     llm_temperature: float = 0.0
@@ -43,6 +42,9 @@ class Settings(BaseSettings):
     openai_api_key: str | None = None
     deepseek_api_key: str | None = None
     huggingface_api_key: str | None = None
+    gemini_api_key: str | None = None
+    groq_api_key: str | None = None
+    cerebras_api_key: str | None = None
 
 
 settings = Settings()
