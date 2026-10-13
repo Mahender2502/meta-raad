@@ -14,12 +14,11 @@ scripts/example/
                                                                char_start, char_end, text, and the article's other fields
 ```
 
-Regenerate (needs torch + transformers, e.g. the backend Docker image):
+Generate from the repository root with the project's Python environment activated
+(needs torch, transformers, and numpy). Outputs are generated locally and ignored by Git:
 
 ```bash
-docker run --rm -v "$PWD":/work -w /work meta-raad-backend:latest \
-  python scripts/embed_dataset.py --input-dir scripts/example/input \
-  --output-dir scripts/example/output --chunk-chars 250 --chunk-overlap 50
+python scripts/embed_dataset.py --input-dir scripts/example/input --output-dir scripts/example/output --chunk-chars 250 --chunk-overlap 50
 ```
 
 Without `--chunk-chars` only the article-level `.npy` is written. The project's retrieval is

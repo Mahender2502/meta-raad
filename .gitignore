@@ -13,3 +13,6 @@ spec.md
 tmp/
 .pytest_cache/
 /runs/
+/scripts/example/output/
+/verification/*.jpg
+/verification/results.json
