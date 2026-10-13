@@ -21,13 +21,18 @@ class Settings(BaseSettings):
     # Files live in <data_dir>/<dataset subdir>/ (see app/core/datasets.py); in the
     # container ./data is mounted at /data. Typed text is embedded with the same
     # model and recipe that produced the stored vectors (CLS token, max 512 tokens).
-    data_dir: str = "/data"
+    data_dir: str = "data"
     bert_model: str = "bert-base-uncased"
     bert_device: str = "cpu"
+    bert_num_threads: int = 2
 
     # --- Dashboard data (JSON files, see app/services/stats.py) ---
     # Inside the container ./backend is mounted at /app, so /app/data is backend/data on the host.
-    stats_dir: str = "/app/data"
+    stats_dir: str = "backend/data"
+    runs_dir: str = "runs"
+    llm_base_url: str | None = None
+    llm_api_key: str | None = None
+    llm_timeout_seconds: float = 60.0
 
     # --- LLM client (provider-agnostic — see app/services/llm_client.py) ---
     # Which concrete LLMClient implementation the factory should build
@@ -40,6 +45,8 @@ class Settings(BaseSettings):
 
     # --- LLM API keys (read by whichever provider client is selected) ---
     openai_api_key: str | None = None
+    openrouter_api_key: str | None = None
+    openrouter_free_only: bool = False
     deepseek_api_key: str | None = None
     huggingface_api_key: str | None = None
     gemini_api_key: str | None = None

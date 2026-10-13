@@ -18,7 +18,7 @@ Usage:
     python scripts/download_data.py --splits train        # train only
     python scripts/download_data.py --dataset N24News --out-dir data/n24
 
-Only N24News has been verified; other dataset folder names are taken from the repository
+N24News and bbc have been verified; other dataset folder names are taken from the repository
 listing and are checked with a HEAD request before downloading.
 """
 
@@ -32,7 +32,7 @@ import urllib.request
 from pathlib import Path
 
 BASE = "https://huggingface.co/datasets/kendx/NLP-ADBench/resolve/main"
-DEFAULT_OUT = {"N24News": "data/n24"}  # other datasets default to data/<name lowercased>
+DEFAULT_OUT = {"N24News": "data/n24", "bbc": "data/bbc"}
 CHUNK = 1 << 20
 
 

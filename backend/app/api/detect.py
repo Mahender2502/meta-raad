@@ -27,11 +27,6 @@ from app.services.memory import Neighbour, get_memory
 router = APIRouter(prefix="/detect", tags=["detect"])
 logger = logging.getLogger(__name__)
 
-# Characters of each retrieved article sent back to the page (the prompt itself is
-# shortened further by the detector).
-_DISPLAY_CHARS = 1500
-
-
 def _to_out(result: DetectionResult) -> DetectionOut:
     verdict = None
     if result.score is not None:
@@ -50,7 +45,7 @@ def _to_out(result: DetectionResult) -> DetectionOut:
 def retrieve_neighbours(dataset: str, text: str, k: int) -> list[Neighbour]:
     """Embed the text with BERT and return its k nearest normal train articles."""
     memory = get_memory(dataset)
-    return memory.search(get_bert_embedder().embed(text), k)
+    return memory.search(get_bert_embedder().embed(text), k, exclude_text=text)
 
 
 @router.post("/compare", response_model=CompareResponse)
@@ -71,6 +66,7 @@ def compare(request: CompareRequest) -> CompareResponse:
                 detail=f"Retrieval data not found ({exc.filename}). Run the data download.",
             ) from exc
         except Exception as exc:  # noqa: BLE001 - surfaced as a clear API error
+            logger.exception("Retrieval failed")
             raise HTTPException(status_code=502, detail=f"Retrieval failed: {exc}") from exc
 
     exemplars = [
@@ -85,6 +81,7 @@ def compare(request: CompareRequest) -> CompareResponse:
             spec.anomaly_category,
             request.setting,
             exemplars=ex,
+            include_reference_categories=request.include_reference_categories,
         )
 
     try:
@@ -141,7 +138,7 @@ def compare(request: CompareRequest) -> CompareResponse:
                 number=i,
                 doc_id=n.doc_id,
                 chunk_id=None,
-                text=n.text[:_DISPLAY_CHARS],
+                text=n.text,
                 category=n.category,
                 is_anomaly=False,
                 distance=n.distance,

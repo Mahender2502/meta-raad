@@ -1,44 +1,24 @@
-# =============================================================================
-# Meta-RAAD: Docker Compose Configuration
-#
-# One service:
-#   backend — FastAPI app. Serves the demo page at / and POST /detect/compare.
-#             Retrieval memory = the NLP-ADBench train split (BERT vectors +
-#             text) loaded into memory from ./data (fetch it with
-#             `python scripts/download_data.py`). No vector database.
-#
-# Usage:
-#   python scripts/download_data.py          # once: fetch data into ./data/n24
-#   docker compose up -d --build             # build and start the backend
-#   open http://localhost:8180
-# =============================================================================
-
+# One image builds React and serves it alongside the FastAPI API.
+# Start both: docker compose up -d --build
+# Website/API: http://localhost:8180
 services:
   backend:
     build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: rad-llm-backend
+      context: .
+      dockerfile: backend/Dockerfile
     volumes:
-      # Mount the backend directory so code changes are reflected immediately
-      # without rebuilding the image.
-      - ./backend:/app
-      # Benchmark vectors and text for the retrieval memory (read-only).
+      - ./runs:/runs:ro
       - ./data:/data:ro
-      # Keep the downloaded BERT weights across container re-creation.
+      - ./backend/data:/app/data
       - hf_cache:/root/.cache/huggingface
     env_file:
-      # LLM provider and API keys (see .env.example). Create .env first.
       - .env
     environment:
-      - LLM_PROVIDER=${LLM_PROVIDER:-stub}
-      - DATA_DIR=/data
+      DATA_DIR: /data
+      STATS_DIR: /app/data
+      RUNS_DIR: /runs
     ports:
-      # FastAPI (uvicorn). Host port 8180 (not 8080) to avoid clashing with other local services.
-      - "8180:8080"
-    # Defined in backend/Dockerfile; repeated here so docker-compose.yml is
-    # self-documenting when read on its own.
-    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--reload"]
+      - "127.0.0.1:${META_RAAD_PORT:-8180}:8080"
     restart: unless-stopped
 
 volumes:

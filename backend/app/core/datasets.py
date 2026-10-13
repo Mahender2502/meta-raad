@@ -16,6 +16,7 @@ class DatasetSpec:
     anomaly_category: str
     data_subdir: str = ""  # folder under settings.data_dir
     file_prefix: str = ""  # NLP-ADBench file prefix, e.g. "N24News"
+    display_name: str = ""
 
 
 DATASETS: dict[str, DatasetSpec] = {
@@ -31,5 +32,14 @@ DATASETS: dict[str, DatasetSpec] = {
         anomaly_category="Food",
         data_subdir="n24",
         file_prefix="N24News",
+        display_name="N24 News",
+    ),
+    "bbc": DatasetSpec(
+        key="bbc",
+        normal_categories=("business", "sport", "politics", "tech"),
+        anomaly_category="entertainment",
+        data_subdir="bbc",
+        file_prefix="bbc",
+        display_name="BBC News",
     ),
 }

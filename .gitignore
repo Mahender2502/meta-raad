@@ -9,3 +9,7 @@ backend/data/live_stats.json
 backend/data/live_stats.json.tmp
 .review/
 spec.md
+.venv/
+tmp/
+.pytest_cache/
+/runs/

@@ -101,11 +101,13 @@ class OpenAICompatibleClient(LLMClient):
         model_name: str,
         api_key: str,
         base_url: str | None = None,
+        extra_body: dict | None = None,
     ) -> None:
         from openai import OpenAI  # local import: keeps the SDK optional for "stub" mode
 
         self.model_name = model_name
-        self._client = OpenAI(api_key=api_key, base_url=base_url)
+        self.extra_body = extra_body
+        self._client = OpenAI(api_key=api_key, base_url=base_url, timeout=settings.llm_timeout_seconds, max_retries=0)
 
     def generate(
         self,
@@ -119,6 +121,7 @@ class OpenAICompatibleClient(LLMClient):
             messages=[{"role": "user", "content": prompt}],
             temperature=temperature if temperature is not None else settings.llm_temperature,
             max_tokens=max_tokens if max_tokens is not None else settings.llm_max_tokens,
+            **({"extra_body": self.extra_body} if self.extra_body is not None else {}),
         )
         choice = response.choices[0]
         return LLMResponse(
@@ -140,6 +143,33 @@ def get_llm_client() -> LLMClient:
 
     if provider == "stub":
         return StubLLMClient(model_name=settings.llm_model_name or "stub-echo")
+
+    if provider == "openrouter":
+        if not settings.openrouter_api_key:
+            raise RuntimeError("LLM_PROVIDER=openrouter but OPENROUTER_API_KEY is not set in .env")
+        model = settings.llm_model_name or "meta-llama/llama-3.1-8b-instruct"
+        options = {}
+        if settings.openrouter_free_only:
+            if not model.endswith(":free"):
+                raise RuntimeError("OPENROUTER_FREE_ONLY requires a fixed model ID ending in :free")
+            options["extra_body"] = {
+                "provider": {"max_price": {"prompt": 0, "completion": 0}},
+                "reasoning": {"enabled": False},
+            }
+        return OpenAICompatibleClient(
+            model_name=model,
+            api_key=settings.openrouter_api_key,
+            base_url="https://openrouter.ai/api/v1",
+            **options,
+        )
+
+    if provider in {"compatible", "ollama"}:
+        if not settings.llm_model_name:
+            raise RuntimeError("Set LLM_MODEL_NAME for the configured server")
+        base_url = settings.llm_base_url or ("http://localhost:11434/v1" if provider == "ollama" else None)
+        if not base_url:
+            raise RuntimeError("Set LLM_BASE_URL for a compatible server")
+        return OpenAICompatibleClient(settings.llm_model_name, settings.llm_api_key or "local", base_url)
 
     if provider == "openai":
         if not settings.openai_api_key:
@@ -188,6 +218,6 @@ def get_llm_client() -> LLMClient:
         )
 
     raise ValueError(
-        f"Unknown LLM_PROVIDER '{provider}'. Expected one of: stub, openai, deepseek, gemini, groq, cerebras "
+        f"Unknown LLM_PROVIDER '{provider}'. Expected one of: stub, openrouter, openai, deepseek, gemini, groq, cerebras, compatible, ollama "
         "(add new providers in app/services/llm_client.py)."
     )

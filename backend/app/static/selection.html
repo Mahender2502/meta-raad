@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meta-RAAD | Model selection</title>
+<style>
+:root{color-scheme:light dark;--bg:#f6f7f9;--paper:white;--ink:#1b1f24;--line:#dfe3e8;--muted:#5d6672;--accent:#2457d6}
+@media(prefers-color-scheme:dark){:root{--bg:#14171b;--paper:#1d2127;--ink:#e8ebef;--line:#343c47;--muted:#aeb7c5;--accent:#8aaaff}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 system-ui, sans-serif}main{max-width:1100px;margin:auto;padding:28px 20px}nav{display:flex;gap:24px;border-bottom:1px solid var(--line);padding-bottom:16px}a{color:var(--accent)}h1{font-size:28px;margin:30px 0 8px}h2{font-size:20px}.muted{color:var(--muted)}.controls{display:flex;gap:20px;flex-wrap:wrap;align-items:end;margin:28px 0}label{display:block}select,button{font:inherit;padding:9px 12px;border:1px solid var(--line);border-radius:6px;background:var(--paper);color:var(--ink)}button{cursor:pointer}button.primary{background:#2457d6;color:white}button:disabled{opacity:.5;cursor:wait}fieldset{border:1px solid var(--line);padding:16px}#candidates{display:flex;gap:14px;flex-wrap:wrap}#status{min-height:30px}table{border-collapse:collapse;width:100%;margin:16px 0}th,td{padding:10px;border-bottom:1px solid var(--line);text-align:left;overflow-wrap:anywhere}th{color:var(--muted)}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--paper);padding:18px;border:1px solid var(--line)}.columns{display:grid;grid-template-columns:1fr 1fr;gap:32px}#ranking{font-size:17px}.error{color:#d64545}details{margin:24px 0} @media(max-width:740px){.columns{grid-template-columns:1fr}.columns section:last-child{order:-1}th,td{padding:7px}}
+</style></head>
+<body><main>
+<nav><a href="/">Anomaly detection</a><strong>Model selection</strong><a href="/dashboard">Dashboard</a><a href="/docs">API docs</a></nav>
+<h1>Feature-grounded model selection</h1>
+<p class="muted">Compare detector capabilities against measured training-data properties. Inspect the selected model, ranking, and the feature values cited in its explanation.</p>
+<div class="controls">
+<div><label for="dataset">Dataset</label><select id="dataset"><option value="n24_news">N24 News</option></select></div>
+<div><label for="embedding">Embeddings</label><select id="embedding"><option value="bert">BERT</option><option value="openai">OpenAI (download required)</option></select></div>
+<div><label for="condition">Selection condition</label><select id="condition"><option value="full">Features + model cards</option><option value="dataset_only">Features only</option><option value="models_only">Model cards only</option><option value="baseline">Basic descriptions</option></select></div>
+<button id="profile">Load training profile</button><button class="primary" id="recommend">Recommend model</button>
+</div>
+<fieldset><legend>Candidate detectors</legend><div id="candidates"></div></fieldset>
+<p id="status" role="status" aria-live="polite"></p>
+<div class="columns"><section><h2>Training profile</h2><p class="muted">Up to 1,000 training examples. Test labels and test anomaly prevalence are withheld.</p><div id="features">Load a profile to inspect its measurements.</div></section>
+<section><h2>Recommendation</h2><div id="result">No recommendation yet.</div></section></div>
+<details><summary>Model capability cards</summary><div id="cards"></div></details>
+<details><summary>Request prompt</summary><pre id="prompt">No request yet.</pre></details>
+<p class="muted">G-score checks numeric citation precision. It does not prove explanation faithfulness or detection accuracy. Evaluate the recommendation on held-out data using the experiment runner.</p>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const fmt=v=>typeof v==='number'?(Number.isInteger(v)?String(v):v.toFixed(5)):String(v??'Unavailable');
+function node(tag,text){const e=document.createElement(tag);e.textContent=text;return e}
+function status(text,error=false){$('status').textContent=text;$('status').className=error?'error':''}
+function table(headers,rows){const t=document.createElement('table');const h=document.createElement('tr');headers.forEach(x=>h.append(node('th',x)));t.append(h);rows.forEach(r=>{const tr=document.createElement('tr');r.forEach(x=>tr.append(node('td',x)));t.append(tr)});return t}
+function showFeatures(features){$('features').replaceChildren(table(['Property','Value'],Object.entries(features).map(([k,v])=>[k.replaceAll('_',' '),v===null?'Unavailable':Number.isInteger(v)?v:Number(v).toFixed(5)])))}
+async function api(url,options){const r=await fetch(url,options);const data=await r.json();if(!r.ok)throw Error(typeof data.detail==='string'?data.detail:JSON.stringify(data.detail));return data}
+function busy(on){$('profile').disabled=on;$('recommend').disabled=on}
+$('profile').onclick=async()=>{busy(true);status('Computing training profile…');try{const d=await api(`/selection/profile/${$('dataset').value}?embedding=${$('embedding').value}`);showFeatures(d.features);status('Training profile ready.')}catch(e){status(e.message,true)}finally{busy(false)}};
+$('recommend').onclick=async()=>{const candidates=[...document.querySelectorAll('#candidates input:checked')].map(x=>x.value);if(!candidates.length){status('Select at least one detector.',true);return}busy(true);status('Preparing profile and requesting model recommendation…');$('result').textContent='Waiting for the configured LLM…';try{const d=await api('/selection/recommend',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({dataset:$('dataset').value,embedding:$('embedding').value,condition:$('condition').value,candidates})});showFeatures(d.features);const list=document.createElement('ol');list.id='ranking';d.ranking.forEach(x=>list.append(node('li',x)));$('result').replaceChildren(node('h3',`Selected: ${d.selected_model}`),node('p',d.reason),list,node('p',`G-score ${(100*d.grounding.g_score).toFixed(1)}% · ${d.grounding.valid_citations}/${d.grounding.total_citations} valid citations`),table(['Feature','Cited','Measured','Check'],d.grounding.checks.map(c=>[c.feature,fmt(c.value),fmt(c.expected),c.valid?'Valid':'Invalid'])));$('prompt').textContent=d.prompt;status(`Completed with ${d.model} in ${d.seconds.toFixed(1)} seconds.`)}catch(e){$('result').textContent='Recommendation unavailable.';status(e.message,true)}finally{busy(false)}};
+api('/selection/cards').then(d=>{for(const [name,card] of Object.entries(d.candidates)){const label=document.createElement('label');const input=document.createElement('input');input.type='checkbox';input.value=name;input.checked=true;label.append(input,document.createTextNode(' '+name));$('candidates').append(label);const title=node('h3',name);const link=node('a','Research source');link.href=card.source;link.target='_blank';link.rel='noopener';$('cards').append(title,node('p',card.mechanism),node('p','Strengths: '+card.strengths),node('p','Limitations: '+card.limitations),link)}}).catch(e=>status(e.message,true));
+</script></body></html>

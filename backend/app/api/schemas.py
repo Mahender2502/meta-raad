@@ -2,7 +2,7 @@
 
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class CompareRequest(BaseModel):
@@ -12,6 +12,14 @@ class CompareRequest(BaseModel):
     dataset: str = Field("n24_news", description="Key of a dataset in app/core/datasets.py.")
     run_baseline: bool = Field(True, description="Run the plain AD-LLM zero-shot prompt (k = 0).")
     run_rag: bool = Field(True, description="Run the retrieval-grounded prompt (RA-ZAD).")
+    include_reference_categories: bool = False
+
+    @field_validator("text")
+    @classmethod
+    def nonblank_text(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("Text cannot be blank")
+        return value
 
 
 class DetectionOut(BaseModel):

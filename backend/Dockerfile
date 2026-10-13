@@ -1,16 +1,12 @@
-# =============================================================================
-# Meta-RAAD Backend: FastAPI Service
-#
-# This is the backend service's own image — separate from the root
-# Dockerfile (which builds the heavier research/experiment environment with
-# torch, jupyter, pyod, etc.). This image only installs what the FastAPI
-# service needs to run: fastapi/uvicorn, NumPy, BERT (transformers + torch),
-# and the OpenAI SDK (used for any OpenAI-compatible LLM provider).
-#
-# Build (standalone):  docker build -t rad-llm-backend ./backend
-# Build (via compose):  docker compose build backend
-# Run (via compose):    docker compose up backend
-# =============================================================================
+# Build both frontend and backend from the repository root.
+# docker build -f backend/Dockerfile -t meta-raad .
+
+FROM node:22-bookworm-slim AS frontend-build
+WORKDIR /build/frontend
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci
+COPY frontend/ ./
+RUN npm run build
 
 FROM python:3.11-slim
 
@@ -27,7 +23,7 @@ WORKDIR /app
 # ---- Python dependencies -----------------------------------------------------
 # Copied first so Docker can cache this layer independently of app code
 # changes.
-COPY requirements.txt .
+COPY backend/requirements.txt .
 # CPU-only PyTorch first: the default wheel pulls several GB of CUDA libraries
 # that this container (bert_device=cpu) never uses. transformers then sees
 # torch as already installed.
@@ -35,12 +31,14 @@ RUN pip install --no-cache-dir --retries 5 --timeout 120 torch --index-url https
 RUN pip install --no-cache-dir -r requirements.txt
 
 # ---- Application code --------------------------------------------------------
-COPY . .
+COPY backend/ .
+COPY --from=frontend-build /build/frontend/dist /frontend/dist
 
 # ---- Networking ---------------------------------------------------------------
 EXPOSE 8080
 
 # ---- Entrypoint ----------------------------------------------------------------
-# --reload is intended for development (paired with the bind-mounted volume
-# in docker-compose.yml). Remove --reload for a production image.
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080", "--reload"]
+# Serve the compiled website and API from one production process.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+    CMD curl --fail http://127.0.0.1:8080/health || exit 1
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]

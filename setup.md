@@ -1,5 +1,9 @@
 # Setup guide
 
+For the current anomaly-detection and model-selection features, Windows startup,
+and evaluation commands, see [README.md](README.md). The guide below describes
+the original Docker demo setup.
+
 How to run the Meta-RAAD demo and dashboard on your own machine. Takes about 15 minutes, most of it downloading.
 
 ## What you need

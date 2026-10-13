@@ -1,0 +1,22 @@
+# Only application source belongs in the build context.
+**
+!backend/
+!backend/**
+!frontend/
+!frontend/**
+**/.env
+**/.env.*
+**/node_modules
+**/dist
+**/__pycache__
+**/*.pyc
+.pytest_cache
+data
+runs
+tmp
+verification
+notes
+tests
+**/*.zip
+**/*.log
+backend/data/live_stats.json*
